@@ -1,58 +1,141 @@
 package com.example.project
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.project.RetrofitInstance
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(modifier: Modifier,
-               viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory (ProductRepository()))
-){
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
+) {
     val state = viewModel.allProducts.observeAsState()
     LaunchedEffect(Unit) { viewModel.loadAllProducts() }
-    when (val result = state.value) {
-        is Resource.Loading -> { CircularProgressIndicator() }
-        is Resource.Success -> {
-            LazyColumn(modifier.fillMaxSize().padding(vertical = 60.dp)) {
-                items(result.data?: emptyList()){product -> ProductItem(product)}
+
+    // Replaced LazyColumn with LazyVerticalGrid for 2 columns
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        when (val result = state.value) {
+            is Resource.Loading -> item(span = { GridItemSpan(maxLineSpan) }) {
+                Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Color(0xFF00C2E0))
+                }
             }
+            is Resource.Success -> {
+                items(result.data ?: emptyList()) { product ->
+                    ProductItemCard(product)
+                }
+            }
+            is Resource.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(
+                    text = result.message ?: "Error loading products",
+                    color = Color.Red,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+            null -> item { }
         }
-        is Resource.Error -> {
-            Text(text = result.message ?: "Error")  }
-        null -> Unit
     }
 }
 
 @Composable
-fun ProductItem(product: Product) {
-    Card(modifier = Modifier.fillMaxWidth().padding(16.dp )
+fun ProductItemCard(product: Product) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { /* Navigate to detail */ }
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            AsyncImage(model = "${RetrofitInstance.BASE_URL}/api/products/image/view/${product.imageIds[0]}",
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(0.75f) // Adjusts the height proportionally to the width
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color(0xFFF4F4F4))
+        ) {
+            AsyncImage(
+                model = "${RetrofitInstance.BASE_URL}/api/products/image/view/${product.imageIds.firstOrNull()}",
                 contentDescription = product.productName,
-                modifier = Modifier.fillMaxWidth().height(200.dp), contentScale = ContentScale.Fit)
-            Spacer(modifier = Modifier.height(20.dp))
-            Text("ProductId: ${product.productId}")
-            Text("Title: ${product.productName}")
-            Text("Price: ${product.price}")
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+
+            // Favorite Button Overlay
+//            Box(
+//                modifier = Modifier
+//                    .align(Alignment.TopEnd)
+//                    .padding(8.dp)
+//                    .size(32.dp)
+//                    .background(Color.White, CircleShape)
+//                    .clickable { /* Toggle favorite */ },
+//                contentAlignment = Alignment.Center
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Default.Favorite,
+//                    contentDescription = "Favorite",
+//                    tint = Color(0xFF1A1A1A), // Dark color for the heart like the image
+//                    modifier = Modifier.size(18.dp)
+//                )
+//            }
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Text Content
+        Text(
+            text = product.productName,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 15.sp,
+            color = Color.Black,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(modifier = Modifier.height(2.dp))
+
+        Text(
+            text = "Premium Collection", // You can map this to an actual category property later
+            color = Color.Gray,
+            fontSize = 13.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = "$${product.price}",
+            color = Color(0xFF00C2E0),
+            fontWeight = FontWeight.Bold,
+            fontSize = 15.sp
+        )
     }
 }
