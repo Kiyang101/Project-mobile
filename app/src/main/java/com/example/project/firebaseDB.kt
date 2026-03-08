@@ -25,6 +25,11 @@ data class History(
     val date: Date = Date()
 )
 
+data class Favorite(
+    val email: String = "",
+    val favoriteProducts: List<Product> = emptyList()
+)
+
 class FirestoreCartDataSource {
     private val collection = Firebase.firestore.collection("cart")
 
@@ -137,6 +142,59 @@ class FirestoreHistoryDataSource {
             snapshot.toObjects(History::class.java)
         } catch (e: Exception) {
             emptyList()
+        }
+    }
+}
+
+class FirestoreFavoriteDataSource {
+    private val collection = Firebase.firestore.collection("favorites")
+
+    suspend fun getFavorite(email: String): Favorite? {
+        return try {
+            val snapshot = collection.document(email).get().await()
+            if (snapshot.exists()) {
+                snapshot.toObject(Favorite::class.java)
+            } else {
+                // Return an empty favorite object if document doesn't exist
+                Favorite(email = email, favoriteProducts = emptyList())
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun addFavorite(email: String, product: Product) {
+        val docRef = collection.document(email)
+        val snapshot = docRef.get().await()
+
+        if (snapshot.exists()) {
+            val favorite = snapshot.toObject(Favorite::class.java)
+            favorite?.let {
+                // Check if product is already in favorites
+                val alreadyExists = it.favoriteProducts.any { p -> p.productId == product.productId }
+                if (!alreadyExists) {
+                    val updatedProducts = it.favoriteProducts.toMutableList()
+                    updatedProducts.add(product)
+                    docRef.update("favoriteProducts", updatedProducts).await()
+                }
+            }
+        } else {
+            // Create a new favorite document if it doesn't exist
+            val newFavorite = Favorite(email = email, favoriteProducts = listOf(product))
+            docRef.set(newFavorite).await()
+        }
+    }
+
+    suspend fun removeFavorite(email: String, productId: Int) {
+        val docRef = collection.document(email)
+        val snapshot = docRef.get().await()
+        val favorite = snapshot.toObject(Favorite::class.java)
+
+        favorite?.let {
+            val updatedProducts = it.favoriteProducts.filter { p ->
+                p.productId != productId
+            }
+            docRef.update("favoriteProducts", updatedProducts).await()
         }
     }
 }
