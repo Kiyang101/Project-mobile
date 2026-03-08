@@ -11,10 +11,19 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,54 +34,132 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    navController: NavController,
     modifier: Modifier = Modifier,
     viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
 ) {
     val state = viewModel.allProducts.observeAsState()
     LaunchedEffect(Unit) { viewModel.loadAllProducts() }
 
-    // Replaced LazyColumn with LazyVerticalGrid for 2 columns
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        when (val result = state.value) {
-            is Resource.Loading -> item(span = { GridItemSpan(maxLineSpan) }) {
-                Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color(0xFF00C2E0))
-                }
-            }
-            is Resource.Success -> {
-                items(result.data ?: emptyList()) { product ->
-                    ProductItemCard(product)
-                }
-            }
-            is Resource.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
-                Text(
-                    text = result.message ?: "Error loading products",
-                    color = Color.Red,
-                    modifier = Modifier.padding(16.dp)
+    var selectedItem by remember { mutableStateOf(0) }
+
+    val items = listOf("HOME", "CATEGORIES", "ORDERS")
+    val icons = listOf(
+        Icons.Default.Home,
+        Icons.Default.GridView,
+        Icons.Default.Receipt,
+    )
+
+    val cyanAccent = Color(0xFF00C2E0)
+
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "SHEOUT",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { /* Open Drawer */ }) {
+                        Icon(Icons.Default.Menu, contentDescription = "Menu")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { /* Open Cart */ }) {
+                        BadgedBox(
+                            badge = {
+                                Badge(containerColor = cyanAccent) { Text("2", color = Color.White) }
+                            }
+                        ) {
+                            Icon(Icons.Outlined.ShoppingBag, contentDescription = "Cart")
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(0xFFF8F9FA)
                 )
+            )
+        },
+        bottomBar = {
+            NavigationBar(
+                containerColor = Color.White,
+                contentColor = Color.Black
+            ) {
+                items.forEachIndexed { index, item ->
+                    NavigationBarItem(
+                        icon = { Icon(icons[index], contentDescription = item) },
+                        label = { Text(item) },
+                        selected = selectedItem == index,
+                        onClick = {
+                            selectedItem = index
+                            when(index) {
+                                0 -> navController.navigate("home")
+                            }
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = cyanAccent,
+                            selectedTextColor = cyanAccent,
+                            unselectedIconColor = Color.LightGray,
+                            unselectedTextColor = Color.LightGray,
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                }
             }
-            null -> item { }
+        },
+    ) { innerPadding ->
+        // Replaced LazyColumn with LazyVerticalGrid for 2 columns
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = modifier.fillMaxSize().padding(innerPadding),
+            contentPadding = PaddingValues(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            when (val result = state.value) {
+                is Resource.Loading -> item(span = { GridItemSpan(maxLineSpan) }) {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color(0xFF00C2E0))
+                    }
+                }
+                is Resource.Success -> {
+                    items(result.data ?: emptyList()) { product ->
+                        ProductItemCard(product, navController)
+                    }
+                }
+                is Resource.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
+                    Text(
+                        text = result.message ?: "Error loading products",
+                        color = Color.Red,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+                null -> item { }
+            }
         }
     }
+
+
 }
 
 @Composable
-fun ProductItemCard(product: Product) {
+fun ProductItemCard(product: Product, navController: NavController) {
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Navigate to detail */ }
+            .clickable { navController.navigate("product/${product.productId}") }
     ) {
         Box(
             modifier = Modifier
@@ -82,29 +169,11 @@ fun ProductItemCard(product: Product) {
                 .background(Color(0xFFF4F4F4))
         ) {
             AsyncImage(
-                model = "${RetrofitInstance.BASE_URL}/api/products/image/view/${product.imageIds.firstOrNull()}",
+                model = "${RetrofitInstance.BASE_URL}/api/products/image/view/${product.imageIds?.firstOrNull()}",
                 contentDescription = product.productName,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-
-            // Favorite Button Overlay
-//            Box(
-//                modifier = Modifier
-//                    .align(Alignment.TopEnd)
-//                    .padding(8.dp)
-//                    .size(32.dp)
-//                    .background(Color.White, CircleShape)
-//                    .clickable { /* Toggle favorite */ },
-//                contentAlignment = Alignment.Center
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.Favorite,
-//                    contentDescription = "Favorite",
-//                    tint = Color(0xFF1A1A1A), // Dark color for the heart like the image
-//                    modifier = Modifier.size(18.dp)
-//                )
-//            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -132,7 +201,7 @@ fun ProductItemCard(product: Product) {
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = "$${product.price}",
+            text = "฿${product.price}",
             color = Color(0xFF00C2E0),
             fontWeight = FontWeight.Bold,
             fontSize = 15.sp

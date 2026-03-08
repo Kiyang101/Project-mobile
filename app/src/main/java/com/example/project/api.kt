@@ -10,20 +10,36 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
+
+data class ProductImage(
+    val imageId: Int,
+    val orientation: String = ""
+)
 
 data class Product(
-    val productId: String,
-    val productName: String,
-    val description: String,
-    val price: Double,
-    val category: String,
-    val imageIds: List<Int>,
-    val rating: Double,
+    val productId: Int = 0,
+    val productName: String = "",
+    val description: String = "",
+    val price: Double = 0.0,
+    val sold: Int = 0,
+    val rating: Double = 0.0,
+    val active: Boolean = false,
+    val quantity: Int = 0,
+    val size: String = "",
+    val category: String = "",
+    val imageIds: List<Int>? = null,         // Populated by getAllProducts
+    val images: List<ProductImage>? = null   // Populated by getProductById
 )
 
 interface ApiService {
     @GET("api/products")
     suspend fun getAllProducts(): Response<List<Product>>
+
+    @GET("api/products/{id}")
+    suspend fun getProductById(
+        @Path("id") id: Int
+    ): Response<List<Product>>
 }
 
 object RetrofitInstance {
@@ -58,11 +74,31 @@ class ProductRepository {
             } else { Resource.Error("Error ${response.code()}") }
         } catch (e: Exception) { Resource.Error(e.message) }
     }
+
+    suspend fun fetchProductById(id: Int): Resource<Product> {
+        return try {
+            val response = RetrofitInstance.api.getProductById(id)
+            if (response.isSuccessful) {
+                response.body()?.firstOrNull()?.let {
+                    Resource.Success(it)
+                } ?: Resource.Error("Product not found")
+            } else { Resource.Error("Error ${response.code()}") }
+        } catch (e: Exception) { Resource.Error(e.message) }
+    }
 }
 
 class ProductViewModel( private val repository: ProductRepository) : ViewModel() {
+    private val _product = MutableLiveData<Resource<Product>>()
     private val _allProducts = MutableLiveData<Resource<List<Product>>>()
     val allProducts: LiveData<Resource<List<Product>>> = _allProducts
+    val product: LiveData<Resource<Product>> = _product
+
+    fun loadProduct(id: Int) {
+        _product.value = Resource.Loading()
+        viewModelScope.launch {
+            _product.value = repository.fetchProductById(id)
+        }
+    }
 
     fun loadAllProducts(){
         _allProducts.value = Resource.Loading()
