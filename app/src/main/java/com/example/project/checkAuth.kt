@@ -1,19 +1,14 @@
 package com.example.project
 
-import android.content.Context
-import androidx.credentials.CredentialManager
-import androidx.credentials.CustomCredential
-import androidx.credentials.GetCredentialRequest
-import androidx.credentials.exceptions.GetCredentialException
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,11 +19,11 @@ import kotlinx.coroutines.tasks.await
 class AuthViewModel : ViewModel() {
     private val auth: FirebaseAuth = Firebase.auth
 
-    val isLoggedIn: Boolean
-        get() = auth.currentUser != null
+    var currentUser by mutableStateOf(auth.currentUser)
+        private set
 
-    val currentUser: FirebaseUser?
-        get() = auth.currentUser
+    val isLoggedIn: Boolean
+        get() = currentUser != null
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
@@ -39,6 +34,13 @@ class AuthViewModel : ViewModel() {
         object Success : AuthState()
         object ResetPasswordSent : AuthState()
         data class Error(val message: String) : AuthState()
+    }
+
+    init {
+        // Listen for auth state changes to keep currentUser state in sync
+        auth.addAuthStateListener { firebaseAuth ->
+            currentUser = firebaseAuth.currentUser
+        }
     }
 
     //------------------ ลงทะเบียนใช้งาน ------------------
@@ -95,5 +97,3 @@ class AuthViewModel : ViewModel() {
         _authState.value = AuthState.Idle
     }
 }
-
-
