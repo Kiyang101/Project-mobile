@@ -46,13 +46,22 @@ fun ProductDetailScreen(
     isLoggedIn: Boolean = false,
     userEmail: String? = null,
     cartViewModel: CartViewModel = viewModel(),
+    favoriteViewModel: FavoriteViewModel = viewModel(),
     onBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val sizes = listOf("S", "M", "L", "XL")
     var selectedSize by remember { mutableStateOf("M") }
     var quantity by remember { mutableStateOf(1) }
-    var isFavorited by remember { mutableStateOf(false) }
+    
+    val favorites by favoriteViewModel.favorites.collectAsState()
+    val isFavorited = favorites.any { it.productId == product.productId }
+
+    LaunchedEffect(userEmail) {
+        userEmail?.let {
+            favoriteViewModel.observeFavorites(it)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -98,7 +107,11 @@ fun ProductDetailScreen(
                             .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
                             .clip(RoundedCornerShape(12.dp))
                             .alpha(if (isLoggedIn) 1f else 0.5f)
-                            .clickable(enabled = isLoggedIn) { isFavorited = !isFavorited },
+                            .clickable(enabled = isLoggedIn) {
+                                if (userEmail != null) {
+                                    favoriteViewModel.toggleFavorite(userEmail, product)
+                                }
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

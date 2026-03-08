@@ -248,6 +248,28 @@ class FirestoreFavoriteDataSource {
         }
     }
 
+    fun getFavoriteFlow(email: String): Flow<Favorite?> = callbackFlow {
+        val docRef = collection.document(email)
+        val subscription = docRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                Log.e("FirestoreFavorite", "Listen failed.", error)
+                return@addSnapshotListener
+            }
+
+            if (snapshot != null && snapshot.exists()) {
+                try {
+                    val favorite = snapshot.toObject(Favorite::class.java)
+                    trySend(favorite)
+                } catch (e: Exception) {
+                    Log.e("FirestoreFavorite", "Error in getFavoriteFlow: ${e.message}", e)
+                }
+            } else {
+                trySend(Favorite(email = email, favoriteProducts = emptyList()))
+            }
+        }
+        awaitClose { subscription.remove() }
+    }
+
     suspend fun addFavorite(email: String, product: Product) {
         val docRef = collection.document(email)
         val snapshot = docRef.get().await()
@@ -278,6 +300,31 @@ class FirestoreFavoriteDataSource {
                 p.productId != productId
             }
             docRef.update("favoriteProducts", updatedProducts).await()
+        }
+    }
+}
+
+class FavoriteViewModel : ViewModel() {
+    private val repository = FirestoreFavoriteDataSource()
+    private val _favorites = MutableStateFlow<List<Product>>(emptyList())
+    val favorites: StateFlow<List<Product>> = _favorites.asStateFlow()
+
+    fun observeFavorites(email: String) {
+        viewModelScope.launch {
+            repository.getFavoriteFlow(email).collect { favorite ->
+                _favorites.value = favorite?.favoriteProducts ?: emptyList()
+            }
+        }
+    }
+
+    fun toggleFavorite(email: String, product: Product) {
+        viewModelScope.launch {
+            val isFav = _favorites.value.any { it.productId == product.productId }
+            if (isFav) {
+                repository.removeFavorite(email, product.productId)
+            } else {
+                repository.addFavorite(email, product)
+            }
         }
     }
 }
