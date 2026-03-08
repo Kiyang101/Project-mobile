@@ -1,21 +1,38 @@
 # Add project specific ProGuard rules here.
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep Firebase model classes
+-keepclassmembers class com.example.project.ProductImage {
+    public <init>();
+    *** get*();
+    *** set*();
+}
+-keepclassmembers class com.example.project.Product {
+    public <init>();
+    *** get*();
+    *** set*();
+}
+-keepclassmembers class com.example.project.Cart {
+    public <init>();
+    *** get*();
+    *** set*();
+}
+-keepclassmembers class com.example.project.CartItem {
+    public <init>();
+    *** get*();
+    *** set*();
+}
+-keepclassmembers class com.example.project.History {
+    public <init>();
+    *** get*();
+    *** set*();
+}
+-keepclassmembers class com.example.project.Favorite {
+    public <init>();
+    *** get*();
+    *** set*();
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Alternatively, keep all classes in the package if they are models
+# -keep class com.example.project.** { *; }
