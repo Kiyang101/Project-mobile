@@ -13,7 +13,7 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 data class ProductImage(
-    val imageId: Int,
+    val imageId: Int = 0,
     val orientation: String = ""
 )
 
@@ -24,12 +24,12 @@ data class Product(
     val price: Double = 0.0,
     val sold: Int = 0,
     val rating: Double = 0.0,
-    val active: Boolean = false,
+    val active: Boolean = true,
     val quantity: Int = 0,
     val size: String = "",
     val category: String = "",
-    val imageIds: List<Int>? = null,         // Populated by getAllProducts
-    val images: List<ProductImage>? = null   // Populated by getProductById
+    val imageIds: List<Int>? = null,
+    val images: List<ProductImage>? = null   
 )
 
 interface ApiService {
@@ -52,7 +52,6 @@ object RetrofitInstance {
             .create(ApiService::class.java)
     }
 }
-
 
 sealed class Resource<T>(
     val data: T? = null,

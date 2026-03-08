@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +55,15 @@ fun HomeScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val authVM = viewModel<AuthViewModel>()
+    
+    val cartVM = viewModel<CartViewModel>()
+    val cartCount by cartVM.cartCount.collectAsState()
+
+    LaunchedEffect(authVM.currentUser?.email) {
+        authVM.currentUser?.email?.let { email ->
+            cartVM.observeCart(email)
+        }
+    }
 
     val items = listOf("HOME", "CATEGORIES", "ORDERS")
     val icons = listOf(
@@ -107,7 +117,15 @@ fun HomeScreen(
                         IconButton(onClick = { /* Open Cart */ }) {
                             BadgedBox(
                                 badge = {
-                                    Badge(containerColor = cyanAccent) { Text("2", color = Color.White) }
+                                    if (cartCount > 0) {
+                                        Badge(containerColor = cyanAccent) {
+                                            Text("$cartCount", color = Color.White)
+                                        }
+                                    }else{
+                                        Badge(containerColor = cyanAccent) {
+                                            Text("0", color = Color.White)
+                                        }
+                                    }
                                 }
                             ) {
                                 Icon(Icons.Outlined.ShoppingBag, contentDescription = "Cart")

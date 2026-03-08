@@ -111,6 +111,7 @@ fun Main() {
                             ProductDetailScreen(
                                 product = product,
                                 isLoggedIn = authVM.isLoggedIn,
+                                userEmail = authVM.currentUser?.email,
                                 onBack = { navController.popBackStack() },
                             )
                         }
