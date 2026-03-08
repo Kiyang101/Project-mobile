@@ -19,10 +19,12 @@ import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +39,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +52,18 @@ fun HomeScreen(
     LaunchedEffect(Unit) { viewModel.loadAllProducts() }
 
     var selectedItem by remember { mutableStateOf(0) }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    val authVM = viewModel<AuthViewModel>()
+    
+    val cartVM = viewModel<CartViewModel>()
+    val cartCount by cartVM.cartCount.collectAsState()
+
+    LaunchedEffect(authVM.currentUser?.email) {
+        authVM.currentUser?.email?.let { email ->
+            cartVM.observeCart(email)
+        }
+    }
 
     val items = listOf("HOME", "CATEGORIES", "ORDERS")
     val icons = listOf(
@@ -59,98 +74,138 @@ fun HomeScreen(
 
     val cyanAccent = Color(0xFF00C2E0)
 
-
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        "SHEOUT",
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            NavDrawerContent(
+                onCloseDrawer = {
+                    scope.launch { drawerState.close() }
                 },
-                navigationIcon = {
-                    IconButton(onClick = { /* Open Drawer */ }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
+                onSignOut = {
+                    scope.launch {
+                        authVM.logout()
+                        drawerState.close()
                     }
                 },
-                actions = {
-                    IconButton(onClick = { /* Open Cart */ }) {
-                        BadgedBox(
-                            badge = {
-                                Badge(containerColor = cyanAccent) { Text("2", color = Color.White) }
+                onSignIn = {
+                    scope.launch { 
+                        drawerState.close()
+                        navController.navigate("login")
+                    }
+                }
+            )
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            "SHEOUT",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            scope.launch { drawerState.open() }
+                        }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { /* Open Cart */ }) {
+                            BadgedBox(
+                                badge = {
+                                    if (cartCount > 0) {
+                                        Badge(containerColor = cyanAccent) {
+                                            Text("$cartCount", color = Color.White)
+                                        }
+                                    }else{
+                                        Badge(containerColor = cyanAccent) {
+                                            Text("0", color = Color.White)
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Outlined.ShoppingBag, contentDescription = "Cart")
                             }
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color(0xFFF8F9FA)
+                    )
+                )
+            },
+            bottomBar = {
+                NavigationBar(
+                    containerColor = Color.White,
+                    contentColor = Color.Black
+                ) {
+                    items.forEachIndexed { index, item ->
+                        NavigationBarItem(
+                            icon = { Icon(icons[index], contentDescription = item) },
+                            label = { Text(item) },
+                            selected = selectedItem == index,
+                            onClick = {
+                                selectedItem = index
+                                when (index) {
+                                    0 -> navController.navigate("home")
+                                }
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = cyanAccent,
+                                selectedTextColor = cyanAccent,
+                                unselectedIconColor = Color.LightGray,
+                                unselectedTextColor = Color.LightGray,
+                                indicatorColor = Color.Transparent
+                            )
+                        )
+                    }
+                }
+            },
+        ) { innerPadding ->
+            // Replaced LazyColumn with LazyVerticalGrid for 2 columns
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentPadding = PaddingValues(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                when (val result = state.value) {
+                    is Resource.Loading -> item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Outlined.ShoppingBag, contentDescription = "Cart")
+                            CircularProgressIndicator(color = Color(0xFF00C2E0))
                         }
                     }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xFFF8F9FA)
-                )
-            )
-        },
-        bottomBar = {
-            NavigationBar(
-                containerColor = Color.White,
-                contentColor = Color.Black
-            ) {
-                items.forEachIndexed { index, item ->
-                    NavigationBarItem(
-                        icon = { Icon(icons[index], contentDescription = item) },
-                        label = { Text(item) },
-                        selected = selectedItem == index,
-                        onClick = {
-                            selectedItem = index
-                            when(index) {
-                                0 -> navController.navigate("home")
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = cyanAccent,
-                            selectedTextColor = cyanAccent,
-                            unselectedIconColor = Color.LightGray,
-                            unselectedTextColor = Color.LightGray,
-                            indicatorColor = Color.Transparent
+
+                    is Resource.Success -> {
+                        items(result.data ?: emptyList()) { product ->
+                            ProductItemCard(product, navController)
+                        }
+                    }
+
+                    is Resource.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
+                        Text(
+                            text = result.message ?: "Error loading products",
+                            color = Color.Red,
+                            modifier = Modifier.padding(16.dp)
                         )
-                    )
-                }
-            }
-        },
-    ) { innerPadding ->
-        // Replaced LazyColumn with LazyVerticalGrid for 2 columns
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = modifier.fillMaxSize().padding(innerPadding),
-            contentPadding = PaddingValues(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            when (val result = state.value) {
-                is Resource.Loading -> item(span = { GridItemSpan(maxLineSpan) }) {
-                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Color(0xFF00C2E0))
                     }
+
+                    null -> item { }
                 }
-                is Resource.Success -> {
-                    items(result.data ?: emptyList()) { product ->
-                        ProductItemCard(product, navController)
-                    }
-                }
-                is Resource.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
-                    Text(
-                        text = result.message ?: "Error loading products",
-                        color = Color.Red,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-                null -> item { }
             }
         }
     }
-
-
 }
 
 @Composable
@@ -174,24 +229,6 @@ fun ProductItemCard(product: Product, navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-
-            // Favorite Button Overlay
-//            Box(
-//                modifier = Modifier
-//                    .align(Alignment.TopEnd)
-//                    .padding(8.dp)
-//                    .size(32.dp)
-//                    .background(Color.White, CircleShape)
-//                    .clickable { /* Toggle favorite */ },
-//                contentAlignment = Alignment.Center
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.Favorite,
-//                    contentDescription = "Favorite",
-//                    tint = Color(0xFF1A1A1A), // Dark color for the heart like the image
-//                    modifier = Modifier.size(18.dp)
-//                )
-//            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -219,7 +256,7 @@ fun ProductItemCard(product: Product, navController: NavController) {
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = "$${product.price}",
+            text = "฿${product.price}",
             color = Color(0xFF00C2E0),
             fontWeight = FontWeight.Bold,
             fontSize = 15.sp

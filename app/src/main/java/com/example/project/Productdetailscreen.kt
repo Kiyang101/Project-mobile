@@ -1,5 +1,6 @@
 package com.example.project
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,9 +22,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +34,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 
 val CyanAccent = Color(0xFF00C2E0)
@@ -39,12 +43,25 @@ val CyanAccent = Color(0xFF00C2E0)
 @Composable
 fun ProductDetailScreen(
     product: Product,
+    isLoggedIn: Boolean = false,
+    userEmail: String? = null,
+    cartViewModel: CartViewModel = viewModel(),
+    favoriteViewModel: FavoriteViewModel = viewModel(),
     onBack: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     val sizes = listOf("S", "M", "L", "XL")
     var selectedSize by remember { mutableStateOf("M") }
     var quantity by remember { mutableStateOf(1) }
-    var isFavorited by remember { mutableStateOf(false) }
+    
+    val favorites by favoriteViewModel.favorites.collectAsState()
+    val isFavorited = favorites.any { it.productId == product.productId }
+
+    LaunchedEffect(userEmail) {
+        userEmail?.let {
+            favoriteViewModel.observeFavorites(it)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -83,13 +100,19 @@ fun ProductDetailScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
 
-                    //Favorite button
+                    // Favorite button
                     Box(
                         modifier = Modifier
                             .size(48.dp)
                             .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
                             .clip(RoundedCornerShape(12.dp))
-                            .clickable { isFavorited = !isFavorited },                        contentAlignment = Alignment.Center
+                            .alpha(if (isLoggedIn) 1f else 0.5f)
+                            .clickable(enabled = isLoggedIn) {
+                                if (userEmail != null) {
+                                    favoriteViewModel.toggleFavorite(userEmail, product)
+                                }
+                            },
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = if (isFavorited) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
@@ -101,12 +124,21 @@ fun ProductDetailScreen(
 
                     // Add to Cart button
                     Button(
-                        onClick = { /* Add to cart */ },
+                        onClick = {
+                            if (userEmail != null) {
+                                cartViewModel.addToCart(userEmail, product, quantity, selectedSize)
+                                Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        enabled = isLoggedIn,
                         modifier = Modifier
                             .weight(1f)
                             .height(48.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = CyanAccent)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = CyanAccent,
+                            disabledContainerColor = Color.LightGray
+                        )
                     ) {
                         Icon(
                             imageVector = Icons.Default.ShoppingCart,
@@ -176,7 +208,7 @@ fun ProductDetailScreen(
                         letterSpacing = 0.5.sp
                     )
                     Text(
-                        text = "$${product.price}",
+                        text = "฿${product.price}",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -215,11 +247,6 @@ fun ProductDetailScreen(
                                 color = Color.Black
                             )
                         }
-                        Text(
-                            text = "(120 reviews)",
-                            fontSize = 11.sp,
-                            color = Color.Gray
-                        )
                     }
                 }
 
@@ -353,8 +380,7 @@ fun ProductDetailScreen(
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
