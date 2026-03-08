@@ -43,6 +43,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.project.ui.theme.ProjectTheme
 import android.util.Log
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.firebaseapp.LoginScreen
+import com.example.firebaseapp.RegisterScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,9 +63,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Main() {
     val navController = rememberNavController()
-
-
     val cyanAccent = Color(0xFF00C2E0)
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val authVM = viewModel<AuthViewModel>()
+    val startDestination = if(authVM.isLoggedIn) "home" else "login"
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -102,6 +110,7 @@ fun Main() {
                             Log.d("ProductDetailScreen", "Product: $product")
                             ProductDetailScreen(
                                 product = product,
+                                isLoggedIn = authVM.isLoggedIn,
                                 onBack = { navController.popBackStack() },
                             )
                         }
@@ -113,6 +122,27 @@ fun Main() {
                     }
                     null -> {}
                 }
+            }
+            composable("login") {
+                LoginScreen(
+                    onLoginSuccess = {
+                        navController.navigate("home"){
+                            popUpTo("login"){inclusive = true}
+                        }
+                    },
+                    onNavigateToRegister = {navController.navigate("register")}
+                )
+            }
+
+            composable("register") {
+                RegisterScreen(
+                    onRegisterSuccess = {
+                        navController.navigate("home"){
+                            popUpTo("register") { inclusive = true }
+                        }
+                    },
+                    onNavigateToLogin = {navController.popBackStack()}
+                )
             }
         }
     }

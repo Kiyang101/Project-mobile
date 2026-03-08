@@ -21,6 +21,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -39,6 +40,7 @@ val CyanAccent = Color(0xFF00C2E0)
 @Composable
 fun ProductDetailScreen(
     product: Product,
+    isLoggedIn: Boolean = false,
     onBack: () -> Unit = {}
 ) {
     val sizes = listOf("S", "M", "L", "XL")
@@ -83,13 +85,15 @@ fun ProductDetailScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
 
-                    //Favorite button
+                    // Favorite button
                     Box(
                         modifier = Modifier
                             .size(48.dp)
                             .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
                             .clip(RoundedCornerShape(12.dp))
-                            .clickable { isFavorited = !isFavorited },                        contentAlignment = Alignment.Center
+                            .alpha(if (isLoggedIn) 1f else 0.5f)
+                            .clickable(enabled = isLoggedIn) { isFavorited = !isFavorited },
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = if (isFavorited) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
@@ -102,11 +106,15 @@ fun ProductDetailScreen(
                     // Add to Cart button
                     Button(
                         onClick = { /* Add to cart */ },
+                        enabled = isLoggedIn,
                         modifier = Modifier
                             .weight(1f)
                             .height(48.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = CyanAccent)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = CyanAccent,
+                            disabledContainerColor = Color.LightGray
+                        )
                     ) {
                         Icon(
                             imageVector = Icons.Default.ShoppingCart,
@@ -215,11 +223,6 @@ fun ProductDetailScreen(
                                 color = Color.Black
                             )
                         }
-//                        Text(
-//                            text = "(120 reviews)",
-//                            fontSize = 11.sp,
-//                            color = Color.Gray
-//                        )
                     }
                 }
 
@@ -353,8 +356,7 @@ fun ProductDetailScreen(
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
