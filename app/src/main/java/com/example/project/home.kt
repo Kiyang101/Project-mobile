@@ -174,24 +174,6 @@ fun ProductItemCard(product: Product, navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-
-            // Favorite Button Overlay
-//            Box(
-//                modifier = Modifier
-//                    .align(Alignment.TopEnd)
-//                    .padding(8.dp)
-//                    .size(32.dp)
-//                    .background(Color.White, CircleShape)
-//                    .clickable { /* Toggle favorite */ },
-//                contentAlignment = Alignment.Center
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.Favorite,
-//                    contentDescription = "Favorite",
-//                    tint = Color(0xFF1A1A1A), // Dark color for the heart like the image
-//                    modifier = Modifier.size(18.dp)
-//                )
-//            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -219,7 +201,7 @@ fun ProductItemCard(product: Product, navController: NavController) {
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = "$${product.price}",
+            text = "฿${product.price}",
             color = Color(0xFF00C2E0),
             fontWeight = FontWeight.Bold,
             fontSize = 15.sp

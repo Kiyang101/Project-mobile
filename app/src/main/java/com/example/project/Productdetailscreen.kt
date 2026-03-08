@@ -176,7 +176,7 @@ fun ProductDetailScreen(
                         letterSpacing = 0.5.sp
                     )
                     Text(
-                        text = "$${product.price}",
+                        text = "฿${product.price}",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -215,11 +215,11 @@ fun ProductDetailScreen(
                                 color = Color.Black
                             )
                         }
-                        Text(
-                            text = "(120 reviews)",
-                            fontSize = 11.sp,
-                            color = Color.Gray
-                        )
+//                        Text(
+//                            text = "(120 reviews)",
+//                            fontSize = 11.sp,
+//                            color = Color.Gray
+//                        )
                     }
                 }
 
