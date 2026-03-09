@@ -38,7 +38,7 @@ fun PaymentScreen(onBack: () -> Unit,onSelectMethod: (String) -> Unit) {
                     Button(
                         onClick = {
                             // เมื่อกดปุ่ม ให้ส่งชื่อบัตรที่เลือกกลับไป และย้อนกลับหน้าเดิม
-                            val methodName = if (selectedId == "visa") "Visa (4242)" else "Mastercard (8888)"
+                            val methodName = if (selectedId == "visa") "Visa" else "Mastercard"
                             onSelectMethod(methodName)
                             onBack()
                         },
