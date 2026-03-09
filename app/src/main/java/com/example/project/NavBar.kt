@@ -30,7 +30,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun NavDrawerContent(
     onCloseDrawer: () -> Unit,
     onSignOut: () -> Unit,
-    onSignIn: () -> Unit
+    onSignIn: () -> Unit,
+    onNavigateToFavorites: () -> Unit = {},
+    onNavigateToPayment: () -> Unit
 ) {
     val cyanAccent = Color(0xFF00C2E0)
     val lightCyan = Color(0xFFE0F7FA)
@@ -89,12 +91,18 @@ fun NavDrawerContent(
             DrawerMenuItem(
                 icon = Icons.Default.FavoriteBorder,
                 label = "Favorites",
-                onClick = { /* Handle navigation */ }
+                onClick = {
+                    onCloseDrawer()
+                    onNavigateToFavorites()
+                }
             )
             DrawerMenuItem(
                 icon = Icons.Default.Payments,
                 label = "Payment Methods",
-                onClick = { /* Handle navigation */ }
+                onClick = {
+                    onNavigateToPayment()
+                    onCloseDrawer()
+                }
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -132,15 +140,6 @@ fun NavDrawerContent(
                 }
             }
 
-
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = "FASHION HUB V2.4.0",
-                fontSize = 12.sp,
-                color = Color.LightGray,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
         }
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -46,22 +48,25 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
+    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository())),
+    cartViewModel: CartViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
 ) {
     val state = viewModel.allProducts.observeAsState()
-    LaunchedEffect(Unit) { viewModel.loadAllProducts() }
-
-    var selectedItem by remember { mutableStateOf(0) }
+    
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val authVM = viewModel<AuthViewModel>()
-    
-    val cartVM = viewModel<CartViewModel>()
-    val cartCount by cartVM.cartCount.collectAsState()
 
-    LaunchedEffect(authVM.currentUser?.email) {
-        authVM.currentUser?.email?.let { email ->
-            cartVM.observeCart(email)
+    val cartCount by cartViewModel.cartCount.collectAsState()
+
+    // Re-fetch products and update cart when user authentication state changes
+    LaunchedEffect(authVM.currentUser) {
+        viewModel.loadAllProducts()
+        val email = authVM.currentUser?.email
+        if (email != null) {
+            cartViewModel.loadCart(email)
+        } else {
+            cartViewModel.clearCartState()
         }
     }
 
@@ -88,10 +93,16 @@ fun HomeScreen(
                     }
                 },
                 onSignIn = {
-                    scope.launch { 
+                    scope.launch {
                         drawerState.close()
                         navController.navigate("login")
                     }
+                },
+                onNavigateToFavorites = {
+                    navController.navigate("favorite")
+                },
+                onNavigateToPayment = {
+                    navController.navigate("payment")
                 }
             )
         }
@@ -114,16 +125,12 @@ fun HomeScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { /* Open Cart */ }) {
+                        IconButton(onClick = { navController.navigate("cart") }) {
                             BadgedBox(
                                 badge = {
                                     if (cartCount > 0) {
                                         Badge(containerColor = cyanAccent) {
                                             Text("$cartCount", color = Color.White)
-                                        }
-                                    }else{
-                                        Badge(containerColor = cyanAccent) {
-                                            Text("0", color = Color.White)
                                         }
                                     }
                                 }
@@ -146,11 +153,21 @@ fun HomeScreen(
                         NavigationBarItem(
                             icon = { Icon(icons[index], contentDescription = item) },
                             label = { Text(item) },
-                            selected = selectedItem == index,
+                            selected = index == 0, // HomeScreen is index 0
+                            // ในไฟล์ home.kt ส่วน bottomBar
                             onClick = {
-                                selectedItem = index
                                 when (index) {
-                                    0 -> navController.navigate("home")
+                                    0 -> { /* อยู่หน้า Home อยู่แล้ว */ }
+                                    1 -> navController.navigate("category") {
+                                        popUpTo("home") { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                    2 -> navController.navigate("order") { // เปลี่ยนจาก "order" เป็นเส้นทางที่ถูกต้อง
+                                        popUpTo("home") { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
                                 }
                             },
                             colors = NavigationBarItemDefaults.colors(
@@ -165,43 +182,56 @@ fun HomeScreen(
                 }
             },
         ) { innerPadding ->
-            // Replaced LazyColumn with LazyVerticalGrid for 2 columns
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = modifier
+            val isRefreshing = state.value is Resource.Loading
+
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { viewModel.loadAllProducts() },
+                modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                    .padding(innerPadding)
             ) {
-                when (val result = state.value) {
-                    is Resource.Loading -> item(span = { GridItemSpan(maxLineSpan) }) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = Color(0xFF00C2E0))
+                // Replaced LazyColumn with LazyVerticalGrid for 2 columns
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    when (val result = state.value) {
+                        is Resource.Loading -> {
+                            // Only show full-screen loader if not already showing pull-to-refresh indicator
+                            if (!isRefreshing) {
+                                item(span = { GridItemSpan(maxLineSpan) }) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(32.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(color = Color(0xFF00C2E0))
+                                    }
+                                }
+                            }
                         }
-                    }
 
-                    is Resource.Success -> {
-                        items(result.data ?: emptyList()) { product ->
-                            ProductItemCard(product, navController)
+                        is Resource.Success -> {
+                            items(result.data ?: emptyList()) { product ->
+                                ProductItemCard(product, navController)
+                            }
                         }
-                    }
 
-                    is Resource.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
-                        Text(
-                            text = result.message ?: "Error loading products",
-                            color = Color.Red,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
+                        is Resource.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
+                            Text(
+                                text = result.message ?: "Error loading products",
+                                color = Color.Red,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
 
-                    null -> item { }
+                        null -> item { }
+                    }
                 }
             }
         }
@@ -246,7 +276,7 @@ fun ProductItemCard(product: Product, navController: NavController) {
         Spacer(modifier = Modifier.height(2.dp))
 
         Text(
-            text = "Premium Collection", // You can map this to an actual category property later
+            text = product.category,
             color = Color.Gray,
             fontSize = 13.sp,
             maxLines = 1,

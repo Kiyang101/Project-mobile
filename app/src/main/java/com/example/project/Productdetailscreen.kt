@@ -1,25 +1,51 @@
 package com.example.project
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.ModeComment
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -47,21 +73,30 @@ fun ProductDetailScreen(
     userEmail: String? = null,
     cartViewModel: CartViewModel = viewModel(),
     favoriteViewModel: FavoriteViewModel = viewModel(),
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    initialSize: String? = null
 ) {
     val context = LocalContext.current
     val sizes = listOf("S", "M", "L", "XL")
-    var selectedSize by remember { mutableStateOf("M") }
-    var quantity by remember { mutableStateOf(1) }
+    var selectedSize by remember { mutableStateOf(initialSize ?: "M") }
     
-    val favorites by favoriteViewModel.favorites.collectAsState()
-    val isFavorited = favorites.any { it.productId == product.productId }
-
-    LaunchedEffect(userEmail) {
-        userEmail?.let {
-            favoriteViewModel.observeFavorites(it)
-        }
+    val cartEntity by cartViewModel.cart.collectAsState()
+    val itemInCart = remember(cartEntity, product.productId, selectedSize) {
+        cartEntity?.cartItems?.find { it.productId == product.productId && it.size == selectedSize }
     }
+
+    var quantity by remember(itemInCart, selectedSize) {
+//        mutableStateOf(itemInCart?.quantity ?: 1)
+        mutableStateOf( 1)
+
+    }
+
+    val favorites by favoriteViewModel.favorites.collectAsState()
+    val isFavorited = remember(favorites, product.productId) {
+        favorites?.favoriteProducts?.contains(product.productId) == true
+    }
+
+    Log.d("ProductDetailScreen", "Favorite IDs: $isFavorited")
 
     Scaffold(
         topBar = {
@@ -109,7 +144,7 @@ fun ProductDetailScreen(
                             .alpha(if (isLoggedIn) 1f else 0.5f)
                             .clickable(enabled = isLoggedIn) {
                                 if (userEmail != null) {
-                                    favoriteViewModel.toggleFavorite(userEmail, product)
+                                    favoriteViewModel.toggleFavorite(userEmail, product.productId)
                                 }
                             },
                         contentAlignment = Alignment.Center
@@ -122,12 +157,17 @@ fun ProductDetailScreen(
                         )
                     }
 
-                    // Add to Cart button
+                    // Add to Cart / Update Cart button
                     Button(
                         onClick = {
                             if (userEmail != null) {
-                                cartViewModel.addToCart(userEmail, product, quantity, selectedSize)
-                                Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
+                                if (itemInCart != null) {
+                                    cartViewModel.updateQuantity(userEmail, product.productId, selectedSize, quantity)
+                                    Toast.makeText(context, "Cart updated", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    cartViewModel.insertCart(userEmail, cartItems = listOf(CartItem(product.productId, quantity, selectedSize)))
+                                    Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         },
                         enabled = isLoggedIn,
@@ -147,7 +187,7 @@ fun ProductDetailScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Add to Cart",
+                            if (itemInCart != null) "Update Cart" else "Add to Cart",
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 15.sp,
                             color = Color.White
@@ -197,11 +237,7 @@ fun ProductDetailScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = buildAnnotatedString {
-                            withStyle(SpanStyle(textDecoration = TextDecoration.LineThrough)) {
-                                append(product.category.uppercase())
-                            }
-                        },
+                        text = product.category.uppercase(),
                         fontSize = 12.sp,
                         color = Color.Gray,
                         fontWeight = FontWeight.Medium,
@@ -251,7 +287,7 @@ fun ProductDetailScreen(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = Color(0xFFEEEEEE))
+                HorizontalDivider(color = Color(0xFFEEEEEE))
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // ── Description ────────────────────────────────────────────
@@ -270,7 +306,7 @@ fun ProductDetailScreen(
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
-                Divider(color = Color(0xFFEEEEEE))
+                HorizontalDivider(color = Color(0xFFEEEEEE))
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // ── Size Selector ──────────────────────────────────────────
@@ -323,7 +359,7 @@ fun ProductDetailScreen(
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
-                Divider(color = Color(0xFFEEEEEE))
+                HorizontalDivider(color = Color(0xFFEEEEEE))
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // ── Quantity ───────────────────────────────────────────────

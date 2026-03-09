@@ -29,7 +29,7 @@ data class Product(
     val size: String = "",
     val category: String = "",
     val imageIds: List<Int>? = null,
-    val images: List<ProductImage>? = null   
+    val images: List<ProductImage>? = null
 )
 
 interface ApiService {
@@ -39,6 +39,11 @@ interface ApiService {
     @GET("api/products/{id}")
     suspend fun getProductById(
         @Path("id") id: Int
+    ): Response<List<Product>>
+
+    @GET("api/products/category/{category}")
+    suspend fun getProductsByCategory(
+        @Path("category") category: String
     ): Response<List<Product>>
 }
 
@@ -84,6 +89,17 @@ class ProductRepository {
             } else { Resource.Error("Error ${response.code()}") }
         } catch (e: Exception) { Resource.Error(e.message) }
     }
+
+    suspend fun fetchProductsByCategory(category: String): Resource<List<Product>> {
+        return try {
+            val response = RetrofitInstance.api.getProductsByCategory(category)
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    Resource.Success(it)
+                } ?: Resource.Error("Empty body")
+            } else { Resource.Error("Error ${response.code()}") }
+        } catch (e: Exception) { Resource.Error(e.message) }
+    }
 }
 
 class ProductViewModel( private val repository: ProductRepository) : ViewModel() {
@@ -103,6 +119,17 @@ class ProductViewModel( private val repository: ProductRepository) : ViewModel()
         _allProducts.value = Resource.Loading()
         viewModelScope.launch {
             _allProducts.value = repository.fetchProduct()
+        }
+    }
+
+    fun clearProducts() {
+        _allProducts.value = null
+    }
+
+    fun loadProductsByCategory(category: String) {
+        _allProducts.value = Resource.Loading()
+        viewModelScope.launch {
+            _allProducts.value = repository.fetchProductsByCategory(category)
         }
     }
 }

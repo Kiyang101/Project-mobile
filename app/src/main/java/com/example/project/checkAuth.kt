@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,6 +49,14 @@ class AuthViewModel : ViewModel() {
             try {
                 auth.createUserWithEmailAndPassword(email, password).await()
                 _authState.value = AuthState.Success
+            } catch (e: FirebaseAuthException) {
+                val message = when (e.errorCode) {
+                    "ERROR_EMAIL_ALREADY_IN_USE" -> "อีเมลนี้ถูกใช้งานแล้ว"
+                    "ERROR_INVALID_EMAIL" -> "รูปแบบอีเมลไม่ถูกต้อง"
+                    "ERROR_WEAK_PASSWORD" -> "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร"
+                    else -> e.message ?: "เกิดข้อผิดพลาดในการลงทะเบียน"
+                }
+                _authState.value = AuthState.Error(message)
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.message ?: "เกิดข้อผิดพลาด")
             }
@@ -81,6 +88,15 @@ class AuthViewModel : ViewModel() {
             try {
                 auth.signInWithEmailAndPassword(email, password).await()
                 _authState.value = AuthState.Success
+            } catch (e: FirebaseAuthException) {
+                val message = when (e.errorCode) {
+                    "ERROR_USER_NOT_FOUND" -> "ไม่พบบัญชีนี้ในระบบ"
+                    "ERROR_WRONG_PASSWORD" -> "รหัสผ่านไม่ถูกต้อง"
+                    "ERROR_INVALID_EMAIL" -> "รูปแบบอีเมลไม่ถูกต้อง"
+                    "ERROR_USER_DISABLED" -> "บัญชีนี้ถูกระงับการใช้งาน"
+                    else -> e.message ?: "เกิดข้อผิดพลาดในการเข้าสู่ระบบ"
+                }
+                _authState.value = AuthState.Error(message)
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.message ?: "เกิดข้อผิดพลาด")
             }
