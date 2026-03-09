@@ -125,53 +125,35 @@ fun OrderCard(history: History, products: List<Product>) {
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Header: Icon, Order ID, Date, and Status Badge
+            // Row 1: Order ID & Date (Left) | PROCESSING Badge (Right)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(52.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFE0F7FA)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Inventory2,
-                            contentDescription = null,
-                            tint = cyanAccent,
-                            modifier = Modifier.size(26.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = "Order #${history.orderId}",
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 16.sp,
-                            color = Color(0xFF1A1C1E)
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "Placed on ${dateFormat.format(history.date)}",
-                            fontSize = 13.sp,
-                            color = Color.Gray
-                        )
-                    }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Order #${history.orderId}",
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 15.sp,
+                        color = Color(0xFF1A1C1E)
+                    )
+                    Text(
+                        text = "Placed on ${dateFormat.format(history.date)}",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
                 }
 
-                // Status Badge
+                // Status Badge (Aligned with Order ID row)
                 Surface(
                     color = Color(0xFFE0F7FA),
-                    shape = RoundedCornerShape(50.dp) // Pill shape
+                    shape = RoundedCornerShape(50.dp)
                 ) {
                     Text(
                         text = "PROCESSING",
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        fontSize = 10.sp,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
                         color = cyanAccent
                     )
@@ -180,13 +162,14 @@ fun OrderCard(history: History, products: List<Product>) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // Row 2: Overlapping Images (Left) | Total Amount (Right)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Bottom
             ) {
-                // ส่วนแสดงรูปสินค้าแบบซ้อนกัน (Overlapping)
-                val displayCount = 2 // จำนวนรูปที่จะแสดงก่อนเป็นกล่อง +
+                // ส่วนแสดงรูปสินค้าแบบซ้อนกัน (มีแต่รูปภาพตามที่สั่ง)
+                val displayCount = 2 
                 val itemsToShow = history.cartItems.take(displayCount)
                 val hasMore = history.cartItems.size > displayCount
                 val totalItemsToDraw = itemsToShow.size + (if (hasMore) 1 else 0)
@@ -194,17 +177,17 @@ fun OrderCard(history: History, products: List<Product>) {
                 Box(
                     modifier = Modifier
                         .height(50.dp)
-                        .width((50 + (totalItemsToDraw - 1) * 28).dp) // คำนวณความกว้างตามจำนวนรูปที่ซ้อนกัน
+                        .width((50 + (totalItemsToDraw - 1) * 28).dp) 
                 ) {
                     itemsToShow.forEachIndexed { index, item ->
                         val product = products.find { it.productId == item.productId }
                         Box(
                             modifier = Modifier
-                                .offset(x = (index * 28).dp) // ระยะซ้อนกัน (เลื่อนภาพถัดไป 28dp จากขนาด 50dp)
+                                .offset(x = (index * 28).dp) 
                                 .size(50.dp)
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(Color.White) // พื้นหลังสีขาวสำหรับทำเป็นขอบ
-                                .padding(2.dp) // ขอบหนา 2dp
+                                .background(Color.White) 
+                                .padding(2.dp) 
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(Color(0xFFF5F5F5))
                         ) {
@@ -217,7 +200,6 @@ fun OrderCard(history: History, products: List<Product>) {
                         }
                     }
 
-                    // แสดงกล่อง + (จำนวนที่เหลือ) แบบซ้อนต่อท้าย
                     if (hasMore) {
                         Box(
                             modifier = Modifier
@@ -240,13 +222,12 @@ fun OrderCard(history: History, products: List<Product>) {
                     }
                 }
 
-                // ส่วนแสดงราคารวม
+                // ส่วนแสดงราคารวม (แนวตรงเดียวกับ Badge PROCESSING ด้านบน)
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         "Total amount",
                         fontSize = 12.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(bottom = 2.dp)
+                        color = Color.Gray
                     )
                     Text(
                         "฿${String.format(Locale.getDefault(), "%.2f", history.totalPrice)}",
