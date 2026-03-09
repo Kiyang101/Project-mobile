@@ -85,7 +85,7 @@ fun Main() {
                 route = "product/{productId}?size={size}",
                 arguments = listOf(
                     navArgument("productId") { type = NavType.StringType },
-                    navArgument("size") { 
+                    navArgument("size") {
                         type = NavType.StringType
                         nullable = true
                         defaultValue = null
@@ -152,6 +152,18 @@ fun Main() {
                     },
                     onNavigateToLogin = {navController.popBackStack()},
                     onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable("favorite") {
+
+                val productVM: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
+
+                FavoriteScreen(
+                    navController = navController,
+                    productViewModel = productVM,
+                    favoriteViewModel = favoriteVM,
+                    authViewModel = authVM
                 )
             }
             composable("category") {

@@ -58,13 +58,12 @@ data class CategoryItem(
 fun CategoryScreen(navController: NavController, modifier: Modifier = Modifier) {
     val categories = remember {
         listOf(
-            CategoryItem("Blazer", "1.2k+ Items", Icons.Default.BusinessCenter, Color(0xFF1976D2), Color(0xFFE3F2FD)),
-            CategoryItem("Coat", "1.2k+ Items", Icons.Default.Checkroom, Color(0xFF00796B), Color(0xFFE0F2F1)),
-            CategoryItem("Dress", "1.2k+ Items", Icons.Default.DryCleaning, Color(0xFFC2185B), Color(0xFFFCE4EC)),
-            CategoryItem("Pants", "1.2k+ Items", Icons.Default.AccessibilityNew, Color(0xFFE65100), Color(0xFFFFF3E0)),
-            CategoryItem("Skirt", "1.2k+ Items", Icons.Default.Woman, Color(0xFF512DA8), Color(0xFFEDE7F6)),
-            CategoryItem("Sweater", "1.2k+ Items", Icons.Default.AcUnit, Color(0xFF880E4F), Color(0xFFFCE4EC)),
-            CategoryItem("View All", "1.2k+ Items", Icons.Default.GridView, Color(0xFF455A64), Color(0xFFF5F5F5))
+            CategoryItem("Blazer", "5 Items", Icons.Default.BusinessCenter, Color(0xFF1976D2), Color(0xFFE3F2FD)),
+            CategoryItem("Coat", "5 Items", Icons.Default.Checkroom, Color(0xFF00796B), Color(0xFFE0F2F1)),
+            CategoryItem("Dress", "5 Items", Icons.Default.DryCleaning, Color(0xFFC2185B), Color(0xFFFCE4EC)),
+            CategoryItem("Pants", "5 Items", Icons.Default.AccessibilityNew, Color(0xFFE65100), Color(0xFFFFF3E0)),
+            CategoryItem("Skirt", "5 Items", Icons.Default.Woman, Color(0xFF512DA8), Color(0xFFEDE7F6)),
+            CategoryItem("Sweater", "5 Items", Icons.Default.AcUnit, Color(0xFF880E4F), Color(0xFFFCE4EC)),
         )
     }
 

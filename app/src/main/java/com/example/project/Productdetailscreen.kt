@@ -86,7 +86,9 @@ fun ProductDetailScreen(
     }
 
     var quantity by remember(itemInCart, selectedSize) {
-        mutableStateOf(itemInCart?.quantity ?: 1)
+//        mutableStateOf(itemInCart?.quantity ?: 1)
+        mutableStateOf( 1)
+
     }
 
     val favorites by favoriteViewModel.favorites.collectAsState()

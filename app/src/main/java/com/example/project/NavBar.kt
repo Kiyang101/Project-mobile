@@ -31,8 +31,7 @@ fun NavDrawerContent(
     onCloseDrawer: () -> Unit,
     onSignOut: () -> Unit,
     onSignIn: () -> Unit,
-    onNavigateToFavorites: () -> Unit = {}
-    onSignIn: () -> Unit,
+    onNavigateToFavorites: () -> Unit = {},
     onNavigateToPayment: () -> Unit
 ) {
     val cyanAccent = Color(0xFF00C2E0)
