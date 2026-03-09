@@ -199,7 +199,13 @@ fun Main() {
 
             //ple
             composable("payment") {
-                PaymentScreen(onBack = { navController.popBackStack() })
+                PaymentScreen(
+                    onBack = { navController.popBackStack()},
+                    onSelectMethod = { selectedMethod ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("selected_method", selectedMethod)
+                })
             }
         }
     }

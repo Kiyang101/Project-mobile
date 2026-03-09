@@ -1,6 +1,7 @@
 package com.example.project
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -8,7 +9,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -47,6 +50,15 @@ fun CartScreen(
     val allProductsState by productViewModel.allProducts.observeAsState()
     val cyanAccent = Color(0xFF00C2E0)
     val historyViewModel: HistoryViewModel = viewModel()
+    var selectedPaymentMethod by remember { mutableStateOf("Select Method") }
+    val navBackStackEntry = navController.currentBackStackEntry
+    val result = navBackStackEntry?.savedStateHandle?.getStateFlow<String>("selected_method", "Select Method")?.collectAsState()
+
+    LaunchedEffect(result?.value) {
+        result?.value?.let {
+            selectedPaymentMethod = it
+        }
+    }
 
     // Load all products to find names/prices/images by productId
     LaunchedEffect(Unit) {
@@ -117,6 +129,40 @@ fun CartScreen(
                             .navigationBarsPadding()
                             .padding(horizontal = 20.dp, vertical = 16.dp)
                     ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { navController.navigate("payment") } // คลิกแล้วไปหน้าเลือกบัตร
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Payments,
+                                    contentDescription = null,
+                                    tint = cyanAccent,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text("Payment Method", fontWeight = FontWeight.Medium)
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = selectedPaymentMethod,
+                                    color = Color.Gray,
+                                    fontSize = 14.sp
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.ChevronRight,
+                                    contentDescription = null,
+                                    tint = Color.LightGray
+                                )
+                            }
+                        }
+
+                        Divider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
