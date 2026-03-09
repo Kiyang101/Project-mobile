@@ -79,7 +79,7 @@ fun ProductDetailScreen(
     val sizes = listOf("S", "M", "L", "XL")
     var selectedSize by remember { mutableStateOf("M") }
     var quantity by remember { mutableStateOf(1) }
-    
+
     val favorites by favoriteViewModel.favorites.collectAsState()
     val isFavorited = remember(favorites, product.productId) {
         favorites?.favoriteProducts?.contains(product.productId) == true

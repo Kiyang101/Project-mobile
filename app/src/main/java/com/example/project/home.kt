@@ -56,8 +56,7 @@ fun HomeScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val authVM = viewModel<AuthViewModel>()
-    
-    var selectedItem by remember { mutableStateOf(0) }
+
     val cartCount by cartViewModel.cartCount.collectAsState()
 
     // Re-fetch products and update cart when user authentication state changes
@@ -94,7 +93,7 @@ fun HomeScreen(
                     }
                 },
                 onSignIn = {
-                    scope.launch { 
+                    scope.launch {
                         drawerState.close()
                         navController.navigate("login")
                     }
@@ -123,7 +122,7 @@ fun HomeScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { /* Open Cart */ }) {
+                        IconButton(onClick = { navController.navigate("cart") }) {
                             BadgedBox(
                                 badge = {
                                     if (cartCount > 0) {
@@ -151,11 +150,21 @@ fun HomeScreen(
                         NavigationBarItem(
                             icon = { Icon(icons[index], contentDescription = item) },
                             label = { Text(item) },
-                            selected = selectedItem == index,
+                            selected = index == 0, // HomeScreen is index 0
+                            // ในไฟล์ home.kt ส่วน bottomBar
                             onClick = {
-                                selectedItem = index
                                 when (index) {
-                                    0 -> navController.navigate("home")
+                                    0 -> { /* อยู่หน้า Home อยู่แล้ว */ }
+                                    1 -> navController.navigate("category") {
+                                        popUpTo("home") { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                    2 -> navController.navigate("order") { // เปลี่ยนจาก "order" เป็นเส้นทางที่ถูกต้อง
+                                        popUpTo("home") { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
                                 }
                             },
                             colors = NavigationBarItemDefaults.colors(
