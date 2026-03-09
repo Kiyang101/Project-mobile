@@ -4,30 +4,30 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.project.ui.theme.ProjectTheme
+import android.util.Log
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.firebaseapp.LoginScreen
+import com.example.firebaseapp.RegisterScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,58 +41,104 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Main() {
     val navController = rememberNavController()
-//    val sharedViewModel: SharedViewModel = viewModel()
+    val cyanAccent = Color(0xFF00C2E0)
 
-    var selectedItem by remember { mutableStateOf(0) }
-    val items = listOf("Home")
-    val icons = listOf(
-        Icons.Default.Home,
-        Icons.Default.History,
-    )
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val authVM = viewModel<AuthViewModel>()
+    
+    val appViewModelFactory = AppViewModelFactory(LocalContext.current)
+    val cartVM: CartViewModel = viewModel(factory = appViewModelFactory)
+    val favoriteVM: FavoriteViewModel = viewModel(factory = appViewModelFactory)
+
+    LaunchedEffect(authVM.currentUser?.email) {
+        authVM.currentUser?.email?.let { email ->
+            favoriteVM.loadFavorites(email)
+            cartVM.loadCart(email)
+        }
+    }
+
     Scaffold(
-        bottomBar = {
-            NavigationBar (
-                containerColor = Color(0xFF1C4D8D),
-                contentColor = Color.White
-            ) {
-                items.forEachIndexed { index, item ->
-                    NavigationBarItem(
-                        icon = { Icon(icons[index], contentDescription = item) },
-                        selected = selectedItem == index,
-                        onClick = { selectedItem = index
-                            when(index){
-                                0 -> navController.navigate("home")
-//                                1 -> navController.navigate("history")
-                            }},
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color.White,
-                            unselectedIconColor = Color.Gray,
-                            indicatorColor = Color(0xFF6A45B1)
-                        )
-                    )
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color(0xFFF8F9FA)
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "home",
+        ) {
+            composable("home") {
+                HomeScreen(
+                    navController = navController,
+                    modifier = Modifier,
+                    cartViewModel = cartVM
+                )
+            }
+            composable("product/{productId}") { backStackEntry ->
+                val productId = backStackEntry.arguments?.getString("productId")
+                val productViewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
+
+                LaunchedEffect(productId) {
+                    productId?.toIntOrNull()?.let {
+                        productViewModel.loadProduct(it)
+                    }
+                }
+
+                val productState by productViewModel.product.observeAsState()
+
+                when (val result = productState) {
+                    is Resource.Loading -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = cyanAccent)
+                        }
+                    }
+                    is Resource.Success -> {
+                        result.data?.let { product ->
+                            ProductDetailScreen(
+                                product = product,
+                                isLoggedIn = authVM.isLoggedIn,
+                                userEmail = authVM.currentUser?.email,
+                                cartViewModel = cartVM,
+                                favoriteViewModel = favoriteVM,
+                                onBack = { navController.popBackStack() },
+                            )
+                        }
+                    }
+                    is Resource.Error -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(text = result.message ?: "Error loading product", color = Color.Red)
+                        }
+                    }
+                    null -> {}
                 }
             }
-        },
+            composable("login") {
+                LoginScreen(
+                    onLoginSuccess = {
+                        navController.navigate("home"){
+                            popUpTo("login"){inclusive = true}
+                        }
+                    },
+                    onNavigateToRegister = {navController.navigate("register")},
+                    onBack = { navController.popBackStack() }
+                )
+            }
 
-        modifier = Modifier.fillMaxSize()
-    ) { innerPadding ->
-            NavHost(
-                navController = navController,
-                startDestination = "home"
-            ) {
-                composable("home") {
-                    HomeScreen(modifier = Modifier.padding(innerPadding))
-                }
+            composable("register") {
+                RegisterScreen(
+                    onRegisterSuccess = {
+                        navController.navigate("home"){
+                            popUpTo("register") { inclusive = true }
+                        }
+                    },
+                    onNavigateToLogin = {navController.popBackStack()},
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
-
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ProjectTheme {}
+    }
 }
