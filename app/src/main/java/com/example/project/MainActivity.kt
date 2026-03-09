@@ -208,6 +208,17 @@ fun Main() {
                     userEmail = authVM.currentUser?.email
                 )
             }
+
+            //ple
+            composable("payment") {
+                PaymentScreen(
+                    onBack = { navController.popBackStack()},
+                    onSelectMethod = { selectedMethod ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("selected_method", selectedMethod)
+                })
+            }
         }
     }
 }

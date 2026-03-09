@@ -32,6 +32,8 @@ fun NavDrawerContent(
     onSignOut: () -> Unit,
     onSignIn: () -> Unit,
     onNavigateToFavorites: () -> Unit = {}
+    onSignIn: () -> Unit,
+    onNavigateToPayment: () -> Unit
 ) {
     val cyanAccent = Color(0xFF00C2E0)
     val lightCyan = Color(0xFFE0F7FA)
@@ -90,7 +92,7 @@ fun NavDrawerContent(
             DrawerMenuItem(
                 icon = Icons.Default.FavoriteBorder,
                 label = "Favorites",
-                onClick = { 
+                onClick = {
                     onCloseDrawer()
                     onNavigateToFavorites()
                 }
@@ -98,7 +100,10 @@ fun NavDrawerContent(
             DrawerMenuItem(
                 icon = Icons.Default.Payments,
                 label = "Payment Methods",
-                onClick = { /* Handle navigation */ }
+                onClick = {
+                    onNavigateToPayment()
+                    onCloseDrawer()
+                }
             )
 
             Spacer(modifier = Modifier.weight(1f))

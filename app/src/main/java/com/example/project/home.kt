@@ -100,6 +100,9 @@ fun HomeScreen(
                 },
                 onNavigateToFavorites = {
                     navController.navigate("favorite")
+                },
+                onNavigateToPayment = {
+                    navController.navigate("payment")
                 }
             )
         }
