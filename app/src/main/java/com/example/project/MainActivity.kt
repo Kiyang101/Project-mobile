@@ -50,13 +50,16 @@ fun Main() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    //Login&User model
     val authVM = viewModel<AuthViewModel>()
-    
+
+    //ดึงข้อมูลจากฐานข้อมูล
     val appViewModelFactory = AppViewModelFactory(LocalContext.current)
     val cartVM: CartViewModel = viewModel(factory = appViewModelFactory)
     val favoriteVM: FavoriteViewModel = viewModel(factory = appViewModelFactory)
 
     LaunchedEffect(authVM.currentUser?.email) {
+        //เมื่อมีการlogin ให้นำข้อมูลfav+cartของuserนั้นมาแสดงผล
         authVM.currentUser?.email?.let { email ->
             favoriteVM.loadFavorites(email)
             cartVM.loadCart(email)
@@ -138,6 +141,11 @@ fun Main() {
                     onNavigateToLogin = {navController.popBackStack()},
                     onBack = { navController.popBackStack() }
                 )
+            }
+
+            //ple
+            composable("payment") {
+                PaymentScreen(onBack = { navController.popBackStack() })
             }
         }
     }
