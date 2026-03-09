@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.project.ui.theme.CyanAccent
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -38,7 +38,6 @@ fun OrderHistoryScreen(
 ) {
     val historyList by historyViewModel.historyList.collectAsState()
     val allProductsState by productViewModel.allProducts.observeAsState()
-    val cyanAccent = Color(0xFF00C2E0)
 
     LaunchedEffect(userEmail) {
         userEmail?.let { historyViewModel.loadHistory(it) }
@@ -68,7 +67,7 @@ fun OrderHistoryScreen(
                     NavigationBarItem(
                         icon = { Icon(icons[index], contentDescription = item) },
                         label = { Text(item) },
-                        selected = index == 2, // Highlight ORDERS
+                        selected = index == 2, 
                         onClick = {
                             when (index) {
                                 0 -> navController.navigate("home") {
@@ -81,8 +80,8 @@ fun OrderHistoryScreen(
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = cyanAccent,
-                            selectedTextColor = cyanAccent,
+                            selectedIconColor = CyanAccent,
+                            selectedTextColor = CyanAccent,
                             indicatorColor = Color.Transparent
                         )
                     )
@@ -113,7 +112,6 @@ fun OrderHistoryScreen(
 
 @Composable
 fun OrderCard(history: History, products: List<Product>) {
-    val cyanAccent = Color(0xFF00C2E0)
     val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
 
     Card(
@@ -125,7 +123,6 @@ fun OrderCard(history: History, products: List<Product>) {
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Row 1: Order ID & Date (Left) | PROCESSING Badge (Right)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -145,7 +142,6 @@ fun OrderCard(history: History, products: List<Product>) {
                     )
                 }
 
-                // Status Badge (Aligned with Order ID row)
                 Surface(
                     color = Color(0xFFE0F7FA),
                     shape = RoundedCornerShape(50.dp)
@@ -155,20 +151,18 @@ fun OrderCard(history: History, products: List<Product>) {
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        color = cyanAccent
+                        color = CyanAccent
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Row 2: Overlapping Images (Left) | Total Amount (Right)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Bottom
             ) {
-                // ส่วนแสดงรูปสินค้าแบบซ้อนกัน (มีแต่รูปภาพตามที่สั่ง)
                 val displayCount = 2 
                 val itemsToShow = history.cartItems.take(displayCount)
                 val hasMore = history.cartItems.size > displayCount
@@ -222,7 +216,6 @@ fun OrderCard(history: History, products: List<Product>) {
                     }
                 }
 
-                // ส่วนแสดงราคารวม (แนวตรงเดียวกับ Badge PROCESSING ด้านบน)
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         "Total amount",

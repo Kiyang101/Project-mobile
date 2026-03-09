@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,11 +18,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import com.example.project.ui.theme.CyanAccent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PaymentScreen(onBack: () -> Unit,onSelectMethod: (String) -> Unit) {
+fun PaymentScreen(onBack: () -> Unit, onSelectMethod: (String) -> Unit) {
     var selectedId by remember { mutableStateOf("visa") }
     Scaffold(
         topBar = {
@@ -34,17 +33,15 @@ fun PaymentScreen(onBack: () -> Unit,onSelectMethod: (String) -> Unit) {
         bottomBar = {
             Surface(shadowElevation = 8.dp) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    // ... (Order Total) ...
                     Button(
                         onClick = {
-                            // เมื่อกดปุ่ม ให้ส่งชื่อบัตรที่เลือกกลับไป และย้อนกลับหน้าเดิม
                             val methodName = if (selectedId == "visa") "Visa" else "Mastercard"
                             onSelectMethod(methodName)
                             onBack()
                         },
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00CCE5))
+                        colors = ButtonDefaults.buttonColors(containerColor = CyanAccent)
                     ) {
                         Text("Confirm", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
@@ -59,7 +56,6 @@ fun PaymentScreen(onBack: () -> Unit,onSelectMethod: (String) -> Unit) {
                 .background(Color(0xFFF8F9FA))
                 .padding(16.dp)
         ) {
-            // ส่วน Saved Cards
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -74,7 +70,7 @@ fun PaymentScreen(onBack: () -> Unit,onSelectMethod: (String) -> Unit) {
                 subtitle = "Expires 12/26",
                 imageRes = R.drawable.visa_logo,
                 isSelected = selectedId == "visa",
-                onSelect = { selectedId = "visa" } // เมื่อกด ให้เซตค่าเป็น visa
+                onSelect = { selectedId = "visa" }
             )
             Spacer(modifier = Modifier.height(8.dp))
             PaymentItemCard(
@@ -82,7 +78,7 @@ fun PaymentScreen(onBack: () -> Unit,onSelectMethod: (String) -> Unit) {
                 subtitle = "Expires 09/25",
                 imageRes = R.drawable.mastercard_logo,
                 isSelected = selectedId == "master",
-                onSelect = { selectedId = "master" } // เมื่อกด ให้เซตค่าเป็น master
+                onSelect = { selectedId = "master" }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -104,7 +100,7 @@ fun PaymentItemCard(
             .clickable { onSelect()},
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp),
-        border = if (isSelected) BorderStroke(2.dp, Color(0xFF00C2E0)) else null
+        border = if (isSelected) BorderStroke(2.dp, CyanAccent) else null
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -118,7 +114,7 @@ fun PaymentItemCard(
                     painter = painterResource(id = imageRes),
                     contentDescription = title,
                     modifier = Modifier.fillMaxSize(),
-                    tint = Color.Unspecified // ใช้สีดั้งเดิมของรูปภาพ
+                    tint = Color.Unspecified
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
@@ -126,7 +122,7 @@ fun PaymentItemCard(
                 Text(title, fontWeight = FontWeight.Bold)
                 Text(subtitle, color = Color.Gray, fontSize = 12.sp)
             }
-            RadioButton(selected = isSelected, onClick = null)
+            RadioButton(selected = isSelected, onClick = null, colors = RadioButtonDefaults.colors(selectedColor = CyanAccent))
         }
     }
 }

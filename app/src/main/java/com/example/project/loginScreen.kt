@@ -1,6 +1,5 @@
 package com.example.firebaseapp
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.project.AuthViewModel
+import com.example.project.ui.theme.CyanAccent
 
 @Composable
 fun LoginScreen(
@@ -50,8 +50,6 @@ fun LoginScreen(
     val authVM = viewModel<AuthViewModel>()
     val authState by authVM.authState.collectAsState()
     
-    val cyanAccent = Color(0xFF00C2E0)
-
     LaunchedEffect(authState) {
         when(authState){
             is AuthViewModel.AuthState.Success -> {
@@ -74,7 +72,7 @@ fun LoginScreen(
             text = { Text(errorMessage) },
             confirmButton = {
                 TextButton(onClick = { showErrorDialog = false }) {
-                    Text("OK", color = cyanAccent)
+                    Text("OK", color = CyanAccent)
                 }
             }
         )
@@ -109,7 +107,7 @@ fun LoginScreen(
                         resetEmail = ""
                     },
                     enabled = resetEmail.isNotBlank(),
-                ) { Text("ส่ง Email", color = cyanAccent) }
+                ) { Text("ส่ง Email", color = CyanAccent) }
             },
             dismissButton = {
                 TextButton(onClick = {
@@ -127,7 +125,6 @@ fun LoginScreen(
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Top Bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -149,7 +146,6 @@ fun LoginScreen(
 
         Spacer(Modifier.height(40.dp))
 
-        // Logo Section
         Box(
             modifier = Modifier
                 .size(100.dp)
@@ -161,7 +157,7 @@ fun LoginScreen(
                 imageVector = Icons.Outlined.ShoppingBag,
                 contentDescription = null,
                 modifier = Modifier.size(50.dp),
-                tint = cyanAccent
+                tint = CyanAccent
             )
         }
         
@@ -173,15 +169,9 @@ fun LoginScreen(
             fontWeight = FontWeight.Bold,
             color = Color(0xFF1A1C1E)
         )
-//        Text(
-//            text = "Elevate your personal style today",
-//            fontSize = 14.sp,
-//            color = Color.Gray
-//        )
 
         Spacer(Modifier.height(48.dp))
 
-        // Email Field
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = "Email Address",
@@ -200,14 +190,13 @@ fun LoginScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFFE5E7EB),
-                    focusedBorderColor = cyanAccent
+                    focusedBorderColor = CyanAccent
                 )
             )
         }
 
         Spacer(Modifier.height(20.dp))
 
-        // Password Field
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -224,7 +213,7 @@ fun LoginScreen(
                     resetEmail = email
                     showForgotDialog = true
                 }) {
-                    Text("Forgot Password?", color = cyanAccent, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Forgot Password?", color = CyanAccent, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
             Spacer(Modifier.height(4.dp))
@@ -248,14 +237,13 @@ fun LoginScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFFE5E7EB),
-                    focusedBorderColor = cyanAccent
+                    focusedBorderColor = CyanAccent
                 )
             )
         }
 
         Spacer(Modifier.height(32.dp))
 
-        // Sign In Button
         Button(
             onClick = {
                 authVM.loginWithEmail(email, password)
@@ -266,7 +254,7 @@ fun LoginScreen(
             shape = RoundedCornerShape(12.dp),
             enabled = email.isNotBlank() && password.isNotBlank(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = cyanAccent,
+                containerColor = CyanAccent,
                 contentColor = Color.White
             )
         ) {
@@ -275,7 +263,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Register Link
         Row(
             modifier = Modifier.padding(bottom = 32.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -284,7 +271,7 @@ fun LoginScreen(
             Text(
                 text = "Register",
                 modifier = Modifier.clickable { onNavigateToRegister() },
-                color = cyanAccent,
+                color = CyanAccent,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             )

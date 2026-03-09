@@ -7,8 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Payments
@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.project.ui.theme.CyanAccent
 import java.util.Locale
 
 data class CartItemUI(
@@ -41,14 +42,11 @@ data class CartItemUI(
 fun CartScreen(
     navController: NavController,
     userEmail: String?,
-    // Use AppViewModelFactory to create Room's CartViewModel
     cartViewModel: CartViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current)),
-    // Use ProductViewModel to fetch product details from API
     productViewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
 ) {
     val cartEntity by cartViewModel.cart.collectAsState()
     val allProductsState by productViewModel.allProducts.observeAsState()
-    val cyanAccent = Color(0xFF00C2E0)
     val historyViewModel: HistoryViewModel = viewModel()
     var selectedPaymentMethod by remember { mutableStateOf("Select Method") }
     val navBackStackEntry = navController.currentBackStackEntry
@@ -60,7 +58,6 @@ fun CartScreen(
         }
     }
 
-    // Load all products to find names/prices/images by productId
     LaunchedEffect(Unit) {
         productViewModel.loadAllProducts()
     }
@@ -69,7 +66,6 @@ fun CartScreen(
         userEmail?.let { cartViewModel.loadCart(it) }
     }
 
-    // Combine Room data with API data
     val products = (allProductsState as? Resource.Success)?.data ?: emptyList()
     val cartItemsUI = remember(cartEntity, products) {
         cartEntity?.cartItems?.mapNotNull { roomItem ->
@@ -79,15 +75,13 @@ fun CartScreen(
         } ?: emptyList()
     }
 
-    // Selection state: Map of (productId, size) to Boolean
     val selectedItems = remember { mutableStateMapOf<Pair<Int, String>, Boolean>() }
 
-    // Update selection state when cart items change
     LaunchedEffect(cartItemsUI) {
         cartItemsUI.forEach { item ->
             val key = Pair(item.product.productId, item.size)
             if (key !in selectedItems) {
-                selectedItems[key] = true // Default new items to selected
+                selectedItems[key] = true 
             }
         }
         val currentKeys = cartItemsUI.map { Pair(it.product.productId, it.size) }.toSet()
@@ -111,7 +105,7 @@ fun CartScreen(
                 title = { Text("My Cart", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -132,7 +126,7 @@ fun CartScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { navController.navigate("payment") } // คลิกแล้วไปหน้าเลือกบัตร
+                                .clickable { navController.navigate("payment") }
                                 .padding(vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
@@ -141,7 +135,7 @@ fun CartScreen(
                                 Icon(
                                     imageVector = Icons.Default.Payments,
                                     contentDescription = null,
-                                    tint = cyanAccent,
+                                    tint = CyanAccent,
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
@@ -173,7 +167,7 @@ fun CartScreen(
                                 "฿${String.format(Locale.getDefault(), "%.2f", totalPrice)}",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = cyanAccent
+                                color = CyanAccent
                             )
                         }
                         Spacer(modifier = Modifier.height(16.dp))
@@ -181,7 +175,6 @@ fun CartScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Select All beside the button
                             Row(
                                 modifier = Modifier.weight(1f),
                                 verticalAlignment = Alignment.CenterVertically
@@ -193,7 +186,7 @@ fun CartScreen(
                                             selectedItems[Pair(it.product.productId, it.size)] = checked
                                         }
                                     },
-                                    colors = CheckboxDefaults.colors(checkedColor = cyanAccent)
+                                    colors = CheckboxDefaults.colors(checkedColor = CyanAccent)
                                 )
                                 Text("All", fontWeight = FontWeight.Medium, fontSize = 14.sp)
                             }
@@ -209,9 +202,7 @@ fun CartScreen(
                                             totalPrice = totalPrice,
                                             date = java.util.Date()
                                         )
-                                        // 2. บันทึกประวัติลง Firebase
                                         historyViewModel.addHistory(history)
-                                        // Process selected items and clear them from cart
                                         selectedCartItems.forEach { item ->
                                             cartViewModel.deleteItem(userEmail, item.product.productId, item.size)
                                         }
@@ -226,7 +217,7 @@ fun CartScreen(
                                     .weight(2f)
                                     .height(52.dp),
                                 shape = RoundedCornerShape(14.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = cyanAccent)
+                                colors = ButtonDefaults.buttonColors(containerColor = CyanAccent)
                             ) {
                                 Text(
                                     if (selectedCartItems.isEmpty()) "Select items"
@@ -248,13 +239,13 @@ fun CartScreen(
                 contentAlignment = Alignment.Center
             ) {
                 if (allProductsState is Resource.Loading) {
-                    CircularProgressIndicator(color = cyanAccent)
+                    CircularProgressIndicator(color = CyanAccent)
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Your cart is empty", color = Color.Gray, fontSize = 16.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         TextButton(onClick = { navController.navigate("home") }) {
-                            Text("Start Shopping", color = cyanAccent)
+                            Text("Start Shopping", color = CyanAccent)
                         }
                     }
                 }
@@ -298,8 +289,6 @@ fun CartItemRow(
     onDelete: () -> Unit,
     onItemClick: () -> Unit
 ) {
-    val cyanAccent = Color(0xFF00C2E0)
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -311,12 +300,11 @@ fun CartItemRow(
         Checkbox(
             checked = isSelected,
             onCheckedChange = onToggleSelection,
-            colors = CheckboxDefaults.colors(checkedColor = cyanAccent)
+            colors = CheckboxDefaults.colors(checkedColor = CyanAccent)
         )
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // This Row is the clickable area for navigation
         Row(
             modifier = Modifier
                 .weight(1f)
@@ -343,7 +331,7 @@ fun CartItemRow(
                 Text(item.product.productName, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
                 Text("Size: ${item.size}", color = Color.Gray, fontSize = 12.sp)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("฿${String.format(Locale.getDefault(), "%.2f", item.product.price)}", fontWeight = FontWeight.Bold, color = cyanAccent, fontSize = 15.sp)
+                Text("฿${String.format(Locale.getDefault(), "%.2f", item.product.price)}", fontWeight = FontWeight.Bold, color = CyanAccent, fontSize = 15.sp)
             }
         }
 
@@ -366,7 +354,7 @@ fun CartItemRow(
                     onClick = { onUpdateQuantity(item.quantity + 1) },
                     modifier = Modifier.size(28.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Increase", tint = cyanAccent, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Add, contentDescription = "Increase", tint = CyanAccent, modifier = Modifier.size(18.dp))
                 }
             }
         }

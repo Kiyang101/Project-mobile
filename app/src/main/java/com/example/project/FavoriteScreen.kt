@@ -9,7 +9,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.project.ui.theme.CyanAccent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,8 +40,6 @@ fun FavoriteScreen(
     val allProductsResource by productViewModel.allProducts.observeAsState()
     val favoriteEntity by favoriteViewModel.favorites.collectAsState()
     val currentUser = authViewModel.currentUser
-
-    val cyanAccent = Color(0xFF00C2E0)
 
     LaunchedEffect(currentUser) {
         productViewModel.loadAllProducts()
@@ -66,7 +65,7 @@ fun FavoriteScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -114,8 +113,6 @@ fun FavoriteProductCard(
     navController: NavController,
     onToggleFavorite: () -> Unit
 ) {
-    val cyanAccent = Color(0xFF00C2E0)
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -149,7 +146,7 @@ fun FavoriteProductCard(
                 Icon(
                     Icons.Default.Favorite,
                     contentDescription = "Remove from favorites",
-                    tint = cyanAccent,
+                    tint = CyanAccent,
                     modifier = Modifier.size(14.dp)
                 )
             }
@@ -180,7 +177,7 @@ fun FavoriteProductCard(
 
         Text(
             text = "฿${product.price}",
-            color = cyanAccent,
+            color = CyanAccent,
             fontWeight = FontWeight.Bold,
             fontSize = 15.sp
         )

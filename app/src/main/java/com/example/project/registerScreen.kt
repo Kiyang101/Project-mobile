@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.project.AuthViewModel
+import com.example.project.ui.theme.CyanAccent
 
 @Composable
 fun RegisterScreen(
@@ -50,8 +51,6 @@ fun RegisterScreen(
     val authVM = viewModel<AuthViewModel>()
     val authState by authVM.authState.collectAsState()
     
-    val cyanAccent = Color(0xFF00C2E0)
-
     LaunchedEffect(authState) {
         when(authState){
             is AuthViewModel.AuthState.Success -> {
@@ -74,7 +73,7 @@ fun RegisterScreen(
             text = { Text(errorMessage) },
             confirmButton = {
                 TextButton(onClick = { showErrorDialog = false }) {
-                    Text("OK", color = cyanAccent)
+                    Text("OK", color = CyanAccent)
                 }
             }
         )
@@ -88,7 +87,6 @@ fun RegisterScreen(
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Top Bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -110,7 +108,6 @@ fun RegisterScreen(
 
         Spacer(Modifier.height(30.dp))
 
-        // Logo Section
         Box(
             modifier = Modifier
                 .size(80.dp)
@@ -122,7 +119,7 @@ fun RegisterScreen(
                 imageVector = Icons.Outlined.ShoppingBag,
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
-                tint = cyanAccent
+                tint = CyanAccent
             )
         }
         
@@ -137,7 +134,6 @@ fun RegisterScreen(
 
         Spacer(Modifier.height(32.dp))
 
-        // Email Field
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = "Email Address",
@@ -156,14 +152,13 @@ fun RegisterScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFFE5E7EB),
-                    focusedBorderColor = cyanAccent
+                    focusedBorderColor = CyanAccent
                 )
             )
         }
 
         Spacer(Modifier.height(16.dp))
 
-        // Password Field
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = "Password",
@@ -192,14 +187,13 @@ fun RegisterScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFFE5E7EB),
-                    focusedBorderColor = cyanAccent
+                    focusedBorderColor = CyanAccent
                 )
             )
         }
 
         Spacer(Modifier.height(16.dp))
 
-        // Confirm Password Field
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = "Confirm Password",
@@ -228,7 +222,7 @@ fun RegisterScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFFE5E7EB),
-                    focusedBorderColor = cyanAccent
+                    focusedBorderColor = CyanAccent
                 )
             )
         }
@@ -244,7 +238,6 @@ fun RegisterScreen(
 
         Spacer(Modifier.height(32.dp))
 
-        // Sign Up Button
         Button(
             onClick = {
                 if (password != confirmPassword) {
@@ -260,7 +253,7 @@ fun RegisterScreen(
             shape = RoundedCornerShape(12.dp),
             enabled = email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = cyanAccent,
+                containerColor = CyanAccent,
                 contentColor = Color.White
             )
         ) {
@@ -269,7 +262,6 @@ fun RegisterScreen(
 
         Spacer(Modifier.height(32.dp))
 
-        // Login Link
         Row(
             modifier = Modifier.padding(bottom = 32.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -278,7 +270,7 @@ fun RegisterScreen(
             Text(
                 text = "Sign In",
                 modifier = Modifier.clickable { onNavigateToLogin() },
-                color = cyanAccent,
+                color = CyanAccent,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             )

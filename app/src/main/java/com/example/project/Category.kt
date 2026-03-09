@@ -6,44 +6,34 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.AccessibilityNew
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.BusinessCenter
 import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.DryCleaning
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Receipt
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Woman
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
+import com.example.project.ui.theme.CyanAccent
 
 data class CategoryItem(
     val name: String,
@@ -67,10 +57,9 @@ fun CategoryScreen(navController: NavController, modifier: Modifier = Modifier) 
         )
     }
 
-    var selectedItem by remember { mutableStateOf(1) } // หน้า Category คือ index 1
+    var selectedItem by remember { mutableStateOf(1) } 
     val items = listOf("HOME", "CATEGORIES", "ORDERS")
     val icons = listOf(Icons.Default.Home, Icons.Default.GridView, Icons.Default.Receipt)
-    val cyanAccent = Color(0xFF00C2E0)
 
     Scaffold(
         topBar = {
@@ -110,8 +99,8 @@ fun CategoryScreen(navController: NavController, modifier: Modifier = Modifier) 
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = cyanAccent,
-                            selectedTextColor = cyanAccent,
+                            selectedIconColor = CyanAccent,
+                            selectedTextColor = CyanAccent,
                             indicatorColor = Color.Transparent
                         )
                     )
@@ -131,7 +120,6 @@ fun CategoryScreen(navController: NavController, modifier: Modifier = Modifier) 
         ) {
             items(categories) { item ->
                 CategoryCard(item) {
-                    // เชื่อมไปยังหน้าแสดงสินค้าตามหมวดหมู่
                     navController.navigate("products/${item.name}")
                 }
             }
@@ -144,7 +132,7 @@ fun CategoryCard(category: CategoryItem, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.85f) // กำหนดให้เป็นทรงสี่เหลี่ยมแนวตั้งนิดๆ
+            .aspectRatio(0.85f)
             .clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -155,7 +143,6 @@ fun CategoryCard(category: CategoryItem, onClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // ส่วนของไอคอนที่มีวงกลมซ้อนหลัง
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -173,7 +160,6 @@ fun CategoryCard(category: CategoryItem, onClick: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ชื่อหมวดหมู่
             Text(
                 text = category.name,
                 fontWeight = FontWeight.Bold,
@@ -181,7 +167,6 @@ fun CategoryCard(category: CategoryItem, onClick: () -> Unit) {
                 color = Color.Black
             )
 
-            // จำนวนสินค้า
             Text(
                 text = category.itemCount,
                 fontSize = 13.sp,
@@ -198,8 +183,6 @@ fun CategoryProductListScreen(
     state: Resource<List<Product>>?,
     navController: NavController
 ) {
-    val cyanAccent = Color(0xFF00C2E0)
-
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -234,21 +217,19 @@ fun CategoryProductListScreen(
                 is Resource.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = cyanAccent
+                        color = CyanAccent
                     )
                 }
                 is Resource.Success -> {
                     val products = state.data ?: emptyList()
 
                     if (products.isEmpty()) {
-                        // กรณีไม่มีสินค้าในหมวดหมู่นี้
                         Text(
                             text = "No items found in $categoryName",
                             modifier = Modifier.align(Alignment.Center),
                             color = Color.Gray
                         )
                     } else {
-                        // แสดงรายการสินค้าแบบ Grid 2 คอลัมน์ (เหมือนหน้า Home)
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             contentPadding = PaddingValues(16.dp),
@@ -268,8 +249,8 @@ fun CategoryProductListScreen(
                     ) {
                         Text(text = "Error: ${state.message}", color = Color.Red)
                         Button(
-                            onClick = { /* เพิ่ม logic ให้กดโหลดใหม่ที่นี่ได้ */ },
-                            colors = ButtonDefaults.buttonColors(containerColor = cyanAccent)
+                            onClick = { /* Retry logic here */ },
+                            colors = ButtonDefaults.buttonColors(containerColor = CyanAccent)
                         ) {
                             Text("Retry")
                         }

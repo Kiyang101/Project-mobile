@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.project.ui.theme.CyanAccent
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,7 +30,6 @@ fun SuccessScreen(
     totalPrice: Double,
     items: List<CartItemUI> = emptyList()
 ) {
-    val cyanAccent = Color(0xFF00C2E0)
     val lightCyan = Color(0xFFE0F7FA)
 
     Scaffold(
@@ -50,7 +50,6 @@ fun SuccessScreen(
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Success Icon
             Box(
                 modifier = Modifier
                     .size(100.dp)
@@ -62,7 +61,7 @@ fun SuccessScreen(
                     modifier = Modifier
                         .size(60.dp)
                         .clip(CircleShape)
-                        .background(cyanAccent),
+                        .background(CyanAccent),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -95,7 +94,6 @@ fun SuccessScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Order Summary Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -110,7 +108,7 @@ fun SuccessScreen(
                     ) {
                         Column {
                             Text("ORDER NUMBER", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.SemiBold)
-                            Text(orderId, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = cyanAccent)
+                            Text(orderId, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CyanAccent)
                         }
                         Column(horizontalAlignment = Alignment.End) {
                             Text("TOTAL AMOUNT", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.SemiBold)
@@ -121,7 +119,6 @@ fun SuccessScreen(
                     if (items.isNotEmpty()) {
                         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFF0F0F0))
 
-                        // Items List
                         items.forEach { item ->
                             Row(
                                 modifier = Modifier
@@ -162,8 +159,8 @@ fun SuccessScreen(
                     .fillMaxWidth()
                     .height(50.dp),
                 shape = RoundedCornerShape(12.dp),
-                border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(cyanAccent.copy(alpha = 0.2f))),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = cyanAccent)
+                border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(CyanAccent.copy(alpha = 0.2f))),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = CyanAccent)
             ) {
                 Text("Continue Shopping", fontWeight = FontWeight.Bold)
             }

@@ -1,7 +1,6 @@
 package com.example.project
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,10 +9,8 @@ import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.project.ui.theme.CyanAccent
 
 @Composable
 fun NavDrawerContent(
@@ -34,7 +32,6 @@ fun NavDrawerContent(
     onNavigateToFavorites: () -> Unit = {},
     onNavigateToPayment: () -> Unit
 ) {
-    val cyanAccent = Color(0xFF00C2E0)
     val lightCyan = Color(0xFFE0F7FA)
     val authVM = viewModel<AuthViewModel>()
 
@@ -48,7 +45,6 @@ fun NavDrawerContent(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Header Section
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -65,7 +61,7 @@ fun NavDrawerContent(
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = "Profile Picture",
-                        tint = cyanAccent,
+                        tint = CyanAccent,
                         modifier = Modifier.size(36.dp)
                     )
                 }
@@ -82,7 +78,6 @@ fun NavDrawerContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Menu Items
             DrawerMenuItem(
                 icon = Icons.Default.Person,
                 label = "User Profile",
@@ -107,7 +102,6 @@ fun NavDrawerContent(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Sign In and Sign Out Button
             if(authVM.isLoggedIn){
                 Button(
                     onClick = onSignOut,
@@ -151,7 +145,6 @@ fun DrawerMenuItem(
     onClick: () -> Unit
 ) {
     val lightCyan = Color(0xFFE0F7FA)
-    val cyanAccent = Color(0xFF00C2E0)
 
     Surface(
         onClick = onClick,
@@ -169,7 +162,7 @@ fun DrawerMenuItem(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = if (label == "User Profile") cyanAccent else Color.DarkGray,
+                tint = if (label == "User Profile") CyanAccent else Color.DarkGray,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -178,12 +171,12 @@ fun DrawerMenuItem(
                 modifier = Modifier.weight(1f),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = if (label == "User Profile") cyanAccent else Color.DarkGray
+                color = if (label == "User Profile") CyanAccent else Color.DarkGray
             )
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = if (label == "User Profile") cyanAccent else Color.LightGray,
+                tint = if (label == "User Profile") CyanAccent else Color.LightGray,
                 modifier = Modifier.size(20.dp)
             )
         }

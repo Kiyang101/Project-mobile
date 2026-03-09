@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -24,13 +23,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.project.ui.theme.ProjectTheme
-import android.util.Log
-import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavType
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.example.firebaseapp.LoginScreen
 import com.example.firebaseapp.RegisterScreen
+import com.example.project.ui.theme.CyanAccent
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +46,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Main() {
     val navController = rememberNavController()
-    val cyanAccent = Color(0xFF00C2E0)
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -107,7 +104,7 @@ fun Main() {
                 when (val result = productState) {
                     is Resource.Loading -> {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = cyanAccent)
+                            CircularProgressIndicator(color = CyanAccent)
                         }
                     }
                     is Resource.Success -> {
@@ -156,9 +153,7 @@ fun Main() {
             }
 
             composable("favorite") {
-
                 val productVM: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
-
                 FavoriteScreen(
                     navController = navController,
                     productViewModel = productVM,
@@ -172,26 +167,22 @@ fun Main() {
                     modifier = Modifier
                 )
             }
-            // ใน MainActivity.kt ส่วนของ NavHost
             composable("products/{categoryName}") { backStackEntry ->
                 val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
                 val viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
 
-                // โหลดข้อมูลสินค้าตามหมวดหมู่เมื่อเข้าหน้านี้
                 LaunchedEffect(categoryName) {
                     viewModel.loadProductsByCategory(categoryName.lowercase())
                 }
 
                 val state by viewModel.allProducts.observeAsState()
 
-                // เรียกใช้ CategoryProductListScreen ที่คุณเขียนไว้ใน Category.kt
                 CategoryProductListScreen(
                     categoryName = categoryName,
                     state = state,
                     navController = navController
                 )
             }
-            // ใน MainActivity.kt
             composable("cart") {
                 CartScreen(
                     navController = navController,
@@ -213,7 +204,6 @@ fun Main() {
                     totalPrice = totalPrice
                 )
             }
-            // ภายใน NavHost ใน MainActivity.kt
             composable("order") {
                 OrderHistoryScreen(
                     navController = navController,
@@ -221,7 +211,6 @@ fun Main() {
                 )
             }
 
-            //ple
             composable("payment") {
                 PaymentScreen(
                     onBack = { navController.popBackStack()},
