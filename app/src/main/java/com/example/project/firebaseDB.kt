@@ -13,7 +13,7 @@ import kotlinx.coroutines.tasks.await
 import java.util.Date
 
 data class History(
-    val orderId: Int = 0,
+    val orderId: String = "",
     val email: String = "",
     val cartItems: List<CartItem> = emptyList(),
     val totalPrice: Double = 0.0,

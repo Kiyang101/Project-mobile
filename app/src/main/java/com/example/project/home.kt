@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -166,43 +167,56 @@ fun HomeScreen(
                 }
             },
         ) { innerPadding ->
-            // Replaced LazyColumn with LazyVerticalGrid for 2 columns
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = modifier
+            val isRefreshing = state.value is Resource.Loading
+
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { viewModel.loadAllProducts() },
+                modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                    .padding(innerPadding)
             ) {
-                when (val result = state.value) {
-                    is Resource.Loading -> item(span = { GridItemSpan(maxLineSpan) }) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = Color(0xFF00C2E0))
+                // Replaced LazyColumn with LazyVerticalGrid for 2 columns
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    when (val result = state.value) {
+                        is Resource.Loading -> {
+                            // Only show full-screen loader if not already showing pull-to-refresh indicator
+                            if (!isRefreshing) {
+                                item(span = { GridItemSpan(maxLineSpan) }) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(32.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(color = Color(0xFF00C2E0))
+                                    }
+                                }
+                            }
                         }
-                    }
 
-                    is Resource.Success -> {
-                        items(result.data ?: emptyList()) { product ->
-                            ProductItemCard(product, navController)
+                        is Resource.Success -> {
+                            items(result.data ?: emptyList()) { product ->
+                                ProductItemCard(product, navController)
+                            }
                         }
-                    }
 
-                    is Resource.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
-                        Text(
-                            text = result.message ?: "Error loading products",
-                            color = Color.Red,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
+                        is Resource.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
+                            Text(
+                                text = result.message ?: "Error loading products",
+                                color = Color.Red,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
 
-                    null -> item { }
+                        null -> item { }
+                    }
                 }
             }
         }
@@ -247,7 +261,7 @@ fun ProductItemCard(product: Product, navController: NavController) {
         Spacer(modifier = Modifier.height(2.dp))
 
         Text(
-            text = "Premium Collection", // You can map this to an actual category property later
+            text = product.category,
             color = Color.Gray,
             fontSize = 13.sp,
             maxLines = 1,
