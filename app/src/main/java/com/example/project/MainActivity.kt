@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -69,8 +70,19 @@ fun Main() {
     val currentRoute = navBackStackEntry?.destination?.route
 
     val authVM = viewModel<AuthViewModel>()
-    val startDestination = if(authVM.isLoggedIn) "home" else "login"
+    
+    // Fix: Use AppViewModelFactory to initialize CartViewModel and FavoriteViewModel
+    val appViewModelFactory = AppViewModelFactory(LocalContext.current)
+    val cartVM: CartViewModel = viewModel(factory = appViewModelFactory)
+    val favoriteVM: FavoriteViewModel = viewModel(factory = appViewModelFactory)
 
+    // Global observation of user data to ensure it's ready when needed
+    LaunchedEffect(authVM.currentUser?.email) {
+        authVM.currentUser?.email?.let { email ->
+            favoriteVM.loadFavorites(email)
+            cartVM.loadCart(email)
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -84,20 +96,21 @@ fun Main() {
             composable("home") {
                 HomeScreen(
                     navController = navController,
-                    modifier = Modifier
+                    modifier = Modifier,
+                    cartViewModel = cartVM
                 )
             }
             composable("product/{productId}") { backStackEntry ->
                 val productId = backStackEntry.arguments?.getString("productId")
-                val viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
+                val productViewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
 
                 LaunchedEffect(productId) {
                     productId?.toIntOrNull()?.let {
-                        viewModel.loadProduct(it)
+                        productViewModel.loadProduct(it)
                     }
                 }
 
-                val productState by viewModel.product.observeAsState()
+                val productState by productViewModel.product.observeAsState()
 
                 when (val result = productState) {
                     is Resource.Loading -> {
@@ -112,6 +125,8 @@ fun Main() {
                                 product = product,
                                 isLoggedIn = authVM.isLoggedIn,
                                 userEmail = authVM.currentUser?.email,
+                                cartViewModel = cartVM,
+                                favoriteViewModel = favoriteVM,
                                 onBack = { navController.popBackStack() },
                             )
                         }

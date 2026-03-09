@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -46,22 +47,26 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
+    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository())),
+    cartViewModel: CartViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
 ) {
     val state = viewModel.allProducts.observeAsState()
-    LaunchedEffect(Unit) { viewModel.loadAllProducts() }
-
-    var selectedItem by remember { mutableStateOf(0) }
+    
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val authVM = viewModel<AuthViewModel>()
     
-    val cartVM = viewModel<CartViewModel>()
-    val cartCount by cartVM.cartCount.collectAsState()
+    var selectedItem by remember { mutableStateOf(0) }
+    val cartCount by cartViewModel.cartCount.collectAsState()
 
-    LaunchedEffect(authVM.currentUser?.email) {
-        authVM.currentUser?.email?.let { email ->
-            cartVM.observeCart(email)
+    // Re-fetch products and update cart when user authentication state changes
+    LaunchedEffect(authVM.currentUser) {
+        viewModel.loadAllProducts()
+        val email = authVM.currentUser?.email
+        if (email != null) {
+            cartViewModel.loadCart(email)
+        } else {
+            cartViewModel.clearCartState()
         }
     }
 
@@ -120,10 +125,6 @@ fun HomeScreen(
                                     if (cartCount > 0) {
                                         Badge(containerColor = cyanAccent) {
                                             Text("$cartCount", color = Color.White)
-                                        }
-                                    }else{
-                                        Badge(containerColor = cyanAccent) {
-                                            Text("0", color = Color.White)
                                         }
                                     }
                                 }
