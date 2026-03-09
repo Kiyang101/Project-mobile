@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 data class History(
     val orderId: String = "",
@@ -19,6 +21,18 @@ data class History(
     val totalPrice: Double = 0.0,
     val date: Date = Date()
 )
+
+fun generateOrderId(): String {
+    // 1. Get current date in YYYYMMDD format
+    val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+    val dateString = dateFormat.format(Date())
+
+    // 2. Generate a 4-digit random number (1000 to 9999)
+    val randomNum = (1000..9999).random()
+
+    // 3. Combine them
+    return "ORD-$dateString-$randomNum"
+}
 
 class FirestoreHistoryDataSource {
     private val collection = Firebase.firestore.collection("history")
