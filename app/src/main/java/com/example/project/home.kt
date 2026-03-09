@@ -84,6 +84,7 @@ fun HomeScreen(
         drawerState = drawerState,
         drawerContent = {
             NavDrawerContent(
+                navController = navController,
                 onCloseDrawer = {
                     scope.launch { drawerState.close() }
                 },
@@ -94,11 +95,16 @@ fun HomeScreen(
                     }
                 },
                 onSignIn = {
-                    scope.launch { 
+                    scope.launch {
                         drawerState.close()
                         navController.navigate("login")
                     }
+                },
+                onNavigateToFavorites = {
+                    navController.navigate("favorite")
+                    scope.launch { drawerState.close() }
                 }
+
             )
         }
     ) {

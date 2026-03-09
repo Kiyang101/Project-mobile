@@ -29,6 +29,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.firebaseapp.LoginScreen
 import com.example.firebaseapp.RegisterScreen
 
+
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,7 +68,9 @@ fun Main() {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF8F9FA)
-    ) { innerPadding ->
+    ) {
+        innerPadding
+        ->
         NavHost(
             navController = navController,
             startDestination = "home",
@@ -78,6 +82,11 @@ fun Main() {
                     cartViewModel = cartVM
                 )
             }
+
+
+
+
+
             composable("product/{productId}") { backStackEntry ->
                 val productId = backStackEntry.arguments?.getString("productId")
                 val productViewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
@@ -139,6 +148,21 @@ fun Main() {
                     onBack = { navController.popBackStack() }
                 )
             }
+
+            composable("favorite") {
+
+                val productVM: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
+
+                FavoriteScreen(
+                    navController = navController,
+                    productViewModel = productVM,
+                    favoriteViewModel = favoriteVM,
+                    authViewModel = authVM
+                )
+            }
+
+
+
         }
     }
 }

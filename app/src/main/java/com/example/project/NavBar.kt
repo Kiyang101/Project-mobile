@@ -25,12 +25,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 
 @Composable
 fun NavDrawerContent(
+    navController: NavController,
     onCloseDrawer: () -> Unit,
     onSignOut: () -> Unit,
-    onSignIn: () -> Unit
+    onSignIn: () -> Unit,
+    onNavigateToFavorites: () -> Unit
 ) {
     val cyanAccent = Color(0xFF00C2E0)
     val lightCyan = Color(0xFFE0F7FA)
@@ -89,12 +92,15 @@ fun NavDrawerContent(
             DrawerMenuItem(
                 icon = Icons.Default.FavoriteBorder,
                 label = "Favorites",
-                onClick = { /* Handle navigation */ }
+                onClick = {onNavigateToFavorites()
+                    onCloseDrawer()
+                }
             )
             DrawerMenuItem(
                 icon = Icons.Default.Payments,
                 label = "Payment Methods",
-                onClick = { /* Handle navigation */ }
+                onClick = { navController.navigate("payment_methods")
+                    onCloseDrawer()}
             )
 
             Spacer(modifier = Modifier.weight(1f))
