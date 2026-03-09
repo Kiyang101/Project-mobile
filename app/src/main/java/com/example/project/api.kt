@@ -105,6 +105,10 @@ class ProductViewModel( private val repository: ProductRepository) : ViewModel()
             _allProducts.value = repository.fetchProduct()
         }
     }
+
+    fun clearProducts() {
+        _allProducts.value = null
+    }
 }
 
 class ProductViewModelFactory(private val repository: ProductRepository) : ViewModelProvider.Factory {

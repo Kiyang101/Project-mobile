@@ -1,58 +1,57 @@
 package com.example.firebaseapp
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-//import androidx.compose.material.CircularProgressIndicator
-//import androidx.compose.material.OutlinedTextField
-//import androidx.compose.material.Text
-//import androidx.compose.material.TextButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.ShoppingBag
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.project.AuthViewModel
 
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
-    onNavigateToLogin: () -> Unit
+    onNavigateToLogin: () -> Unit,
+    onBack: () -> Unit = {}
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var passVisible by remember { mutableStateOf(false) }
+    var confirmPassVisible by remember { mutableStateOf(false) }
     var localError by remember { mutableStateOf<String?>(null) }
 
     val authVM = viewModel<AuthViewModel>()
     val authState by authVM.authState.collectAsState()
+    
+    val cyanAccent = Color(0xFF00C2E0)
 
     LaunchedEffect(authState) {
         when(authState){
-
             is AuthViewModel.AuthState.Success -> {
                 authVM.resetState()
                 onRegisterSuccess()
@@ -64,43 +63,177 @@ fun RegisterScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
+            .background(Color.White)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("สมัครสมาชิก", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        // Top Bar
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 48.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+            Text(
+                text = "Sign Up",
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.width(48.dp))
+        }
+
+        Spacer(Modifier.height(30.dp))
+
+        // Logo Section
+        Box(
+            modifier = Modifier
+                .size(80.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFC7F1F7)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.ShoppingBag,
+                contentDescription = null,
+                modifier = Modifier.size(40.dp),
+                tint = cyanAccent
+            )
+        }
+        
+        Spacer(Modifier.height(16.dp))
+        
+        Text(
+            text = "SHEOUT",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1A1C1E)
+        )
+//        Text(
+//            text = "Join us and elevate your style",
+//            fontSize = 14.sp,
+//            color = Color.Gray
+//        )
+
         Spacer(Modifier.height(32.dp))
 
-        //------------------- TextField กรอกสมัครสมาชิก -------------------
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            label = { Text("Confirm Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
-        )
+        // Email Field
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Email Address",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.DarkGray
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                placeholder = { Text("name@example.com", color = Color.LightGray) },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color.Gray) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color(0xFFE5E7EB),
+                    focusedBorderColor = cyanAccent
+                )
+            )
+        }
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(16.dp))
+
+        // Password Field
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Password",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.DarkGray
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                placeholder = { Text("••••••••", color = Color.LightGray) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.Gray) },
+                visualTransformation = if (passVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { passVisible = !passVisible }) {
+                        Icon(
+                            imageVector = if (passVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = "Visibility",
+                            tint = Color.Gray
+                        )
+                    }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color(0xFFE5E7EB),
+                    focusedBorderColor = cyanAccent
+                )
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Confirm Password Field
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Confirm Password",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.DarkGray
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                placeholder = { Text("••••••••", color = Color.LightGray) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.Gray) },
+                visualTransformation = if (confirmPassVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { confirmPassVisible = !confirmPassVisible }) {
+                        Icon(
+                            imageVector = if (confirmPassVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = "Visibility",
+                            tint = Color.Gray
+                        )
+                    }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color(0xFFE5E7EB),
+                    focusedBorderColor = cyanAccent
+                )
+            )
+        }
+
+        if (localError != null) {
+            Text(
+                text = localError!!,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
+
+        Spacer(Modifier.height(32.dp))
+
+        // Sign Up Button
         Button(
             onClick = {
                 if (password != confirmPassword) {
-                    localError = "Password และ Confirm Password ไม่ตรงกัน"
+                    localError = "Passwords do not match"
                     return@Button
                 }
                 localError = null
@@ -108,18 +241,32 @@ fun RegisterScreen(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(6.dp),
-            enabled = email.isNotBlank() && password.isNotBlank(),
+                .height(56.dp),
+            shape = RoundedCornerShape(12.dp),
+            enabled = email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF6D9E51),
-                contentColor = Color.White)
+                containerColor = cyanAccent,
+                contentColor = Color.White
+            )
         ) {
-            Text("สมัครสมาชิก", color = Color.White)
+            Text("Sign Up", fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
-        Spacer(Modifier.height(12.dp))
-        TextButton(onClick = onNavigateToLogin) {
-            Text("เป็นสมาชิกแล้ว? เข้าสู่ระบบ")
+
+        Spacer(Modifier.height(32.dp))
+
+        // Login Link
+        Row(
+            modifier = Modifier.padding(bottom = 32.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Already have an account? ", color = Color.Gray, fontSize = 14.sp)
+            Text(
+                text = "Sign In",
+                modifier = Modifier.clickable { onNavigateToLogin() },
+                color = cyanAccent,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
+            )
         }
     }
 }
