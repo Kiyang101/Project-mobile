@@ -1,18 +1,20 @@
 package com.example.firebaseapp
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -29,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.project.AuthViewModel
+import com.example.project.R
 import com.example.project.ui.theme.CyanAccent
 
 @Composable
@@ -122,6 +126,7 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -144,33 +149,26 @@ fun LoginScreen(
             Spacer(modifier = Modifier.width(48.dp))
         }
 
-        Spacer(Modifier.height(40.dp))
+        Spacer(Modifier.height(10.dp))
 
-        Box(
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Logo",
             modifier = Modifier
-                .size(100.dp)
+                .size(280.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFC7F1F7)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.ShoppingBag,
-                contentDescription = null,
-                modifier = Modifier.size(50.dp),
-                tint = CyanAccent
-            )
-        }
-        
-        Spacer(Modifier.height(24.dp))
-        
-        Text(
-            text = "SHEOUT",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF1A1C1E)
         )
+        
+//        Spacer(Modifier.height(10.dp))
+        
+//        Text(
+//            text = "SHEOUT",
+//            fontSize = 32.sp,
+//            fontWeight = FontWeight.Bold,
+//            color = Color(0xFF1A1C1E)
+//        )
 
-        Spacer(Modifier.height(48.dp))
+        Spacer(Modifier.height(24.dp))
 
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
@@ -261,7 +259,7 @@ fun LoginScreen(
             Text("Sign In", fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(Modifier.height(32.dp))
 
         Row(
             modifier = Modifier.padding(bottom = 32.dp),

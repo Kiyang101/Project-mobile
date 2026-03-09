@@ -48,7 +48,7 @@ interface ApiService {
 }
 
 object RetrofitInstance {
-    const val BASE_URL = "https://d8cd-2001-44c8-6571-d0f6-f40c-ec28-3243-39be.ngrok-free.app"
+    const val BASE_URL = "https://broderick-cognoscible-bulgingly.ngrok-free.dev"
     val api: ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
