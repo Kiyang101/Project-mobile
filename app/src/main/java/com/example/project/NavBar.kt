@@ -132,15 +132,6 @@ fun NavDrawerContent(
                 }
             }
 
-
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = "FASHION HUB V2.4.0",
-                fontSize = 12.sp,
-                color = Color.LightGray,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
         }
     }
 }
