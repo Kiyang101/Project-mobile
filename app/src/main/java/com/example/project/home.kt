@@ -98,6 +98,9 @@ fun HomeScreen(
                         drawerState.close()
                         navController.navigate("login")
                     }
+                },
+                onNavigateToFavorites = {
+                    navController.navigate("favorite")
                 }
             )
         }

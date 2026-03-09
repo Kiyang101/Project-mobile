@@ -30,7 +30,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun NavDrawerContent(
     onCloseDrawer: () -> Unit,
     onSignOut: () -> Unit,
-    onSignIn: () -> Unit
+    onSignIn: () -> Unit,
+    onNavigateToFavorites: () -> Unit = {}
 ) {
     val cyanAccent = Color(0xFF00C2E0)
     val lightCyan = Color(0xFFE0F7FA)
@@ -89,7 +90,10 @@ fun NavDrawerContent(
             DrawerMenuItem(
                 icon = Icons.Default.FavoriteBorder,
                 label = "Favorites",
-                onClick = { /* Handle navigation */ }
+                onClick = { 
+                    onCloseDrawer()
+                    onNavigateToFavorites()
+                }
             )
             DrawerMenuItem(
                 icon = Icons.Default.Payments,

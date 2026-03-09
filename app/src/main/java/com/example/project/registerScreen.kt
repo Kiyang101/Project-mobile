@@ -1,6 +1,5 @@
 package com.example.firebaseapp
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -44,6 +43,9 @@ fun RegisterScreen(
     var passVisible by remember { mutableStateOf(false) }
     var confirmPassVisible by remember { mutableStateOf(false) }
     var localError by remember { mutableStateOf<String?>(null) }
+    
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     val authVM = viewModel<AuthViewModel>()
     val authState by authVM.authState.collectAsState()
@@ -56,8 +58,26 @@ fun RegisterScreen(
                 authVM.resetState()
                 onRegisterSuccess()
             }
+            is AuthViewModel.AuthState.Error -> {
+                errorMessage = (authState as AuthViewModel.AuthState.Error).message
+                showErrorDialog = true
+                authVM.resetState()
+            }
             else -> {}
         }
+    }
+
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = { Text("Registration Error") },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                TextButton(onClick = { showErrorDialog = false }) {
+                    Text("OK", color = cyanAccent)
+                }
+            }
+        )
     }
 
     Column(
@@ -114,11 +134,6 @@ fun RegisterScreen(
             fontWeight = FontWeight.Bold,
             color = Color(0xFF1A1C1E)
         )
-//        Text(
-//            text = "Join us and elevate your style",
-//            fontSize = 14.sp,
-//            color = Color.Gray
-//        )
 
         Spacer(Modifier.height(32.dp))
 

@@ -87,7 +87,6 @@ fun ProductDetailScreen(
 
     Log.d("ProductDetailScreen", "Favorite IDs: $isFavorited")
 
-
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -222,11 +221,7 @@ fun ProductDetailScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = buildAnnotatedString {
-                            withStyle(SpanStyle(textDecoration = TextDecoration.LineThrough)) {
-                                append(product.category.uppercase())
-                            }
-                        },
+                        text = product.category.uppercase(),
                         fontSize = 12.sp,
                         color = Color.Gray,
                         fontWeight = FontWeight.Medium,

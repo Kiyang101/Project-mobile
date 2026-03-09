@@ -43,6 +43,9 @@ fun LoginScreen(
     val context = LocalContext.current
     var showForgotDialog by remember { mutableStateOf(false) }
     var resetEmail by remember { mutableStateOf("") }
+    
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     val authVM = viewModel<AuthViewModel>()
     val authState by authVM.authState.collectAsState()
@@ -54,8 +57,27 @@ fun LoginScreen(
             is AuthViewModel.AuthState.Success -> {
                 authVM.resetState()
                 onLoginSuccess()
-            }else -> {}
+            }
+            is AuthViewModel.AuthState.Error -> {
+                errorMessage = (authState as AuthViewModel.AuthState.Error).message
+                showErrorDialog = true
+                authVM.resetState()
+            }
+            else -> {}
         }
+    }
+
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = { Text("Login Error") },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                TextButton(onClick = { showErrorDialog = false }) {
+                    Text("OK", color = cyanAccent)
+                }
+            }
+        )
     }
 
     if (showForgotDialog) {
