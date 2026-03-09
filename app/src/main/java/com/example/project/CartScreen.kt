@@ -1,6 +1,7 @@
 package com.example.project
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -232,6 +233,9 @@ fun CartScreen(
                         },
                         onDelete = {
                             userEmail?.let { cartViewModel.deleteItem(it, itemUI.product.productId, itemUI.size) }
+                        },
+                        onItemClick = {
+                            navController.navigate("product/${itemUI.product.productId}?size=${itemUI.size}")
                         }
                     )
                 }
@@ -246,7 +250,8 @@ fun CartItemRow(
     isSelected: Boolean,
     onToggleSelection: (Boolean) -> Unit,
     onUpdateQuantity: (Int) -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onItemClick: () -> Unit
 ) {
     val cyanAccent = Color(0xFF00C2E0)
 
@@ -264,30 +269,40 @@ fun CartItemRow(
             colors = CheckboxDefaults.colors(checkedColor = cyanAccent)
         )
 
-        Spacer(modifier = Modifier.width(4.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
-        Box(
+        // This Row is the clickable area for navigation
+        Row(
             modifier = Modifier
-                .size(85.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFFF0F0F0))
+                .weight(1f)
+                .clickable { onItemClick() },
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            AsyncImage(
-                model = "${RetrofitInstance.BASE_URL}/api/products/image/view/${item.product.images?.firstOrNull()?.imageId ?: item.product.imageIds?.firstOrNull()}",
-                contentDescription = item.product.productName,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
+            Box(
+                modifier = Modifier
+                    .size(85.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFF0F0F0))
+            ) {
+                AsyncImage(
+                    model = "${RetrofitInstance.BASE_URL}/api/products/image/view/${item.product.images?.firstOrNull()?.imageId ?: item.product.imageIds?.firstOrNull()}",
+                    contentDescription = item.product.productName,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column {
+                Text(item.product.productName, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
+                Text("Size: ${item.size}", color = Color.Gray, fontSize = 12.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("฿${String.format(Locale.getDefault(), "%.2f", item.product.price)}", fontWeight = FontWeight.Bold, color = cyanAccent, fontSize = 15.sp)
+            }
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(item.product.productName, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
-            Text("Size: ${item.size}", color = Color.Gray, fontSize = 12.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("฿${String.format(Locale.getDefault(), "%.2f", item.product.price)}", fontWeight = FontWeight.Bold, color = cyanAccent, fontSize = 15.sp)
-        }
+        Spacer(modifier = Modifier.width(8.dp))
 
         Column(horizontalAlignment = Alignment.End) {
             IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {

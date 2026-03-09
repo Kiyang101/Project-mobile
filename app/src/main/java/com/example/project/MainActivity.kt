@@ -81,8 +81,19 @@ fun Main() {
                     cartViewModel = cartVM
                 )
             }
-            composable("product/{productId}") { backStackEntry ->
+            composable(
+                route = "product/{productId}?size={size}",
+                arguments = listOf(
+                    navArgument("productId") { type = NavType.StringType },
+                    navArgument("size") { 
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) { backStackEntry ->
                 val productId = backStackEntry.arguments?.getString("productId")
+                val size = backStackEntry.arguments?.getString("size")
                 val productViewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory(ProductRepository()))
 
                 LaunchedEffect(productId) {
@@ -108,6 +119,7 @@ fun Main() {
                                 cartViewModel = cartVM,
                                 favoriteViewModel = favoriteVM,
                                 onBack = { navController.popBackStack() },
+                                initialSize = size
                             )
                         }
                     }

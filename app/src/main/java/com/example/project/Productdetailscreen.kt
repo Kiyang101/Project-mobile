@@ -73,12 +73,21 @@ fun ProductDetailScreen(
     userEmail: String? = null,
     cartViewModel: CartViewModel = viewModel(),
     favoriteViewModel: FavoriteViewModel = viewModel(),
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    initialSize: String? = null
 ) {
     val context = LocalContext.current
     val sizes = listOf("S", "M", "L", "XL")
-    var selectedSize by remember { mutableStateOf("M") }
-    var quantity by remember { mutableStateOf(1) }
+    var selectedSize by remember { mutableStateOf(initialSize ?: "M") }
+    
+    val cartEntity by cartViewModel.cart.collectAsState()
+    val itemInCart = remember(cartEntity, product.productId, selectedSize) {
+        cartEntity?.cartItems?.find { it.productId == product.productId && it.size == selectedSize }
+    }
+
+    var quantity by remember(itemInCart, selectedSize) {
+        mutableStateOf(itemInCart?.quantity ?: 1)
+    }
 
     val favorites by favoriteViewModel.favorites.collectAsState()
     val isFavorited = remember(favorites, product.productId) {
@@ -147,12 +156,17 @@ fun ProductDetailScreen(
                         )
                     }
 
-                    // Add to Cart button
+                    // Add to Cart / Update Cart button
                     Button(
                         onClick = {
                             if (userEmail != null) {
-                                cartViewModel.insertCart(userEmail, cartItems = listOf(CartItem(product.productId, quantity, selectedSize)))
-                                Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
+                                if (itemInCart != null) {
+                                    cartViewModel.updateQuantity(userEmail, product.productId, selectedSize, quantity)
+                                    Toast.makeText(context, "Cart updated", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    cartViewModel.insertCart(userEmail, cartItems = listOf(CartItem(product.productId, quantity, selectedSize)))
+                                    Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         },
                         enabled = isLoggedIn,
@@ -172,7 +186,7 @@ fun ProductDetailScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Add to Cart",
+                            if (itemInCart != null) "Update Cart" else "Add to Cart",
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 15.sp,
                             color = Color.White
