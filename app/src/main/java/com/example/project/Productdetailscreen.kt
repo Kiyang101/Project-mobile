@@ -71,7 +71,7 @@ fun ProductDetailScreen(
     initialSize: String? = null
 ) {
     val context = LocalContext.current
-    val sizes = listOf("S", "M", "L", "XL")
+    val sizes = listOf("S", "M", "L", "XL", "XXL")
     var selectedSize by remember { mutableStateOf(initialSize ?: "M") }
     
     val cartEntity by cartViewModel.cart.collectAsState()

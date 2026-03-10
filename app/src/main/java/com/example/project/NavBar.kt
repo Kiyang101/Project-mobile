@@ -9,7 +9,6 @@ import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -30,7 +29,6 @@ fun NavDrawerContent(
     onSignOut: () -> Unit,
     onSignIn: () -> Unit,
     onNavigateToFavorites: () -> Unit = {},
-    onNavigateToPayment: () -> Unit
 ) {
     val lightCyan = Color(0xFFE0F7FA)
     val authVM = viewModel<AuthViewModel>()
@@ -89,14 +87,6 @@ fun NavDrawerContent(
                 onClick = {
                     onCloseDrawer()
                     onNavigateToFavorites()
-                }
-            )
-            DrawerMenuItem(
-                icon = Icons.Default.Payments,
-                label = "Payment Methods",
-                onClick = {
-                    onNavigateToPayment()
-                    onCloseDrawer()
                 }
             )
 
